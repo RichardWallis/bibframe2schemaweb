@@ -1,0 +1,4 @@
+Flask
+flask-wtf
+rdflib
+rdflib_jsonld
