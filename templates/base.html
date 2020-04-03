@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        {% if title %}
+        <title>{{ title }} - bibframe2schema.org</title>
+        {% else %}
+        <title>bibframe2schema.org</title>
+        {% endif %}
+    
+    </head>
+    <body>
+        <a href="/"><img src="{{ url_for('static', filename='bibframe2schema.png') }}"></a>
+        <div>
+            <a href="/index">Home</a>
+            <a href="/compare">View Schema</a>
+        </div>
+        <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+</html>
