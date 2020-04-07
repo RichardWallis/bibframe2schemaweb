@@ -1,0 +1,145 @@
+/* -- general -- */
+body
+{
+color: #3A4956;
+background: #FFF;
+font-family: "Lucida Grande" , "Lucida Sans Unicode" , Verdana, Tahoma, Arial, sans-serif;
+line-height: 160%;
+margin: 0;
+padding: 20px;
+}
+code
+{
+font-family: Courier, monospace;
+}
+h1
+{
+font: bold 24px Helvetica, Arial, sans-serif;
+color: #000000;
+letter-spacing: -1px;
+margin: 0.25em 0 0 0;
+}
+
+h2 {
+/* border-top: 1px solid #990000; */
+padding-top: 5px;
+clear: both;
+color: #990000;
+font: normal 18px Helvetica, Arial, sans-serif;
+margin: 2em 0 0 0;
+}
+h3 {
+font-size: 12px;
+color: #660000;
+margin: 1em 0 0 0;
+position: relative;
+top: 8px;
+}
+
+h4
+{
+font-size: 100%;
+margin: 0.5em 0 1em 0;
+position: relative;
+}
+*/
+hr
+{
+border: none;
+height: 1px;
+background: #ccc;
+margin: 2em 0 4em 0;
+}
+
+input, select {
+    font-size: 0.9em;
+}
+
+/* Menu panel */
+.menuPanel {
+    color: #fff;
+    background: #000;
+    height: 2em;
+}
+
+.menuPanel a {
+    color: #fff;
+    padding: #10px;
+    margin: 0 20;
+    text-decoration: none;
+    line-height:2em;
+    text-align: center;
+}
+.menuPanel a:hover {
+    color: #fff;
+    font-weight: bold;
+    padding: #5px;
+}
+
+.messages {
+    color: red;
+}
+/* Selection panel */
+.selectionPanel {
+    padding:0 20;
+    width: max-content;
+}
+.selectInput {
+    padding-right: 20px;
+    font-size: 1.2em;
+}
+.submit {
+    font-size: 1.5em;
+    display: table;
+    margin: 0 auto;
+}
+
+/* Display data tab selection */
+.ds-selector-tabs {
+  padding-bottom: 2em;
+}
+.ds-selector-tabs .selectors {
+  padding: 0;
+  border-bottom: 1px solid #ccc;
+  height: 28px;
+}
+.ds-selector-tabs .selectors a {
+  display: inline-block;
+  min-width: 54px;
+  text-align: center;
+  font-size: 1.2em;
+  height: 2.2em;
+  padding: 0 15px;
+  line-height: 2em;
+  transition: all,0.218s;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+  color: #666;
+  background: #aaa;
+  border: 1px solid transparent;
+}
+.ds-selector-tabs .selectors a:first-child {
+  margin-left: 2px;
+}
+.ds-selector-tabs .selectors a.selected {
+  color: #202020 !important;
+  background: #fff !important;
+  border: 1px solid #ccc;
+  border-bottom: 1px solid #fff !important;
+  }
+.ds-selector-tabs .selectors a:hover {
+  background-color: transparent;
+  color: #202020;
+  background: #ccc;
+  cursor: pointer;
+}
+.ds-selector-tabs pre {
+  display: none;
+}
+.ds-selector-tabs pre.selected {
+  display: block;
+}
+.datapanel {
+    font-size: 1.1em;
+}
+

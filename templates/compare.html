@@ -1,31 +1,83 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<h1>Compare</h1>
-<div>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.source.label }}
-            {{ form.source(size=32) }}
-        </p>
-        <p>
-            {{ form.sourceType.label }}
-            {{ form.sourceType() }}
-        </p>
-        <p>
-            {{ form.sourceFormat.label }}
-            {{ form.sourceFormat() }}
-        </p>
-        <p>
-            {{ form.outFormat.label }}
-            {{ form.outFormat() }}
-        </p>
-        <p>
-            {{ form.submit() }}
-        </p>
-    </form>
+<script type="text/javascript">
+    $(document).ready(function(){
+       setTimeout(function(){
+          $('.ds-selector-tabs .selectors a').click(function() {
+            var $this = $(this);
+            var $p = $this.parents('.ds-selector-tabs');
+            $('.selected', $p).removeClass('selected');
+            $this.addClass('selected');
+            $('pre.' + $this.data('selects'), $p).addClass('selected');
+          });
+        }, 0);
+    });
+</script>
+<h1>Compare Schema</h1>
+<div class="content">
+    <div class="selectionPanel">
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+            <p>
+                <span class="selectInput">
+                    {{ form.source.label }}
+                    {{ form.source(size=75) }}
+                </span>
+            </p>
+            <p>
+                <span class="selectInput">
+                    {{ form.sourceType.label }}
+                    {{ form.sourceType() }}
+                </span>
+                <span class="selectInput">
+                    {{ form.sourceFormat.label }}
+                    {{ form.sourceFormat() }}
+                </span>
+                <span class="selectInput">
+                    {{ form.outFormat.label }}
+                    {{ form.outFormat() }}
+                </span>
+            </p>
+            <p>
+                <span class="submit">
+                    {{ form.submit() }}
+                </span>
+            </p>
+        </form>
+    </div>
+    {% if dataToDisplay %}
+    <div class="data">
+        <div class='ds-selector-tabs ds-selector'>
+          <div class='selectors'>
+            <a data-selects='source' class=''>Source Bibframe</a>
+            <a data-selects='full' class=''>Bibframe + Schema.org</a>
+            <a data-selects='schema'  class='selected'>Schema.org</a>
+        </div>
+        {% if dataSource %}
+            <pre class="datapanel prettyprint  source " id="data-source">
+                <code class=" {{ diplaylang }} ">
+{{ dataSource }}
+                </code>
+            </pre>
+            {% endif %} <!-- dataSource -->
+        {% if dataFull %}
+            <pre class="datapanel prettyprint full" id="data-full">
+                <code class=" {{ diplaylang }} ">
+{{ dataFull }}
+                </code>
+            </pre>
+            {% endif %} <!-- dataFull -->
+        {% if dataSchema %}
+            <pre class="datapanel prettyprint schema selected" id="data-schema">
+                <code class=" {{ diplaylang }} ">
+{{ dataSchema }}
+                </code>
+            </pre>
+         {% endif %} <!-- dataSchema -->
+    </div>
+    {% endif %} <!-- dataToDisplay -->
+        
 </div>
 
 {% endblock %}
