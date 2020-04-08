@@ -15,6 +15,7 @@ from rdflib.serializer import Serializer
 rdflib.plugin.register("jsonld", Parser, "rdflib_jsonld.parser", "JsonLDParser")
 rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLDSerializer")
 
+FLATTENIDS = True
 TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/master/tokens.json"
 TOKENS = None
 SPARQLSCRIPT = "file:////Users/wallisr/Development/Biframe2Schema/bibframe2schemaweb/testbibframe2schema.sparql"
@@ -65,7 +66,7 @@ class Compare():
                         self.dataFull = self.simplyframe(self.dataFull)
 
                 if self.schemaOnly():
-                    context = {"schema": "http://schema.org" }
+                    context = {"schema": "http://schema.org/" }
                     self.dataSchema = self.graph.serialize(format = self.outFormat ,
                                     context = context,
                                     auto_compact=True,
@@ -207,9 +208,28 @@ class Compare():
             if len(subjects) == 1:
                 ref.update(items.pop(ref['@id']))
                 del ref['@id']
+        if FLATTENIDS:
+            items = self.flattenIds(items)
         data['@graph'] = items
-
         return json.dumps(data, indent=2)
+        
+    def flattenIds(self, node):
+        ret = node
+        if isinstance(node, dict):
+            if len(node) == 1:
+                id = node.get("@id", None)
+                if id:
+                    return id #Return node @id instead of node
+            for s, v in node.items():
+                node[s] = self.flattenIds(v)
+
+        elif isinstance(node,list):
+            lst = []
+            for v in node:
+                lst.append(self.flattenIds(v))
+            ret = lst
+        return ret
+                
 
 class CompareSelectForm(FlaskForm):
     source = StringField('Source')
