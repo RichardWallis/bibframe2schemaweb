@@ -16,9 +16,10 @@ rdflib.plugin.register("jsonld", Parser, "rdflib_jsonld.parser", "JsonLDParser")
 rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLDSerializer")
 
 FLATTENIDS = True
-TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/master/tokens.json"
+TOKENFILE= "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testtokens.json"
+#TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/master/tokens.json"
 TOKENS = None
-SPARQLSCRIPT = "file:////Users/wallisr/Development/Biframe2Schema/bibframe2schemaweb/testbibframe2schema.sparql"
+SPARQLSCRIPT = "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testbibframe2schema.sparql"
 #SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/query/bibframe2schema.sparql"
 SCHEMAONLY="""
 prefix schema: <http://schema.org/> 
@@ -42,12 +43,7 @@ class Compare():
     def compare(self):
         form = CompareSelectForm()
         dataToDisplay = False
-        if form.source.data:
-#            flash("Selection '%s'" % form.source.data)
-#            flash("Source type '%s'" % form.sourceType.data)
-#            flash("Source format '%s'" % form.sourceFormat.data)
-#            flash("Display format '%s'" % form.outFormat.data)
-            
+        if form.source.data:            
             self.source = form.source.data
             self.sourceType = form.sourceType.data
             self.sourceFormat = form.sourceFormat.data
@@ -181,8 +177,9 @@ class Compare():
                     if tf:
                         data = json.loads(tf)
                 except Exception as e:
-                    print("Token file load error: \n%s" % (e))
-
+                     print("Token file load error: \n%s" % (e))
+                     flash("Token file load error: \n%s" % (e))
+ 
             if data:
                 TOKENS.update(data)
 
@@ -229,6 +226,10 @@ class Compare():
                 lst.append(self.flattenIds(v))
             ret = lst
         return ret
+        
+    def flush(self):
+        URLCache.flush()
+        flash("URLCache flushed")
                 
 
 class CompareSelectForm(FlaskForm):
@@ -247,6 +248,12 @@ class URLCache():
     @classmethod
     def get(cls,url):
         itm = cls.items.get(url,None)
+        if itm:
+            timeout = datetime.timedelta(hours=1)
+            if (itm.time + timeout) <  datetime.datetime.now():
+                #print("Expired")
+                itm = None
+
         if not itm:
             try:
                 req = urllib.request.Request(url)

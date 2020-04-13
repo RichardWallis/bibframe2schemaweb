@@ -12,8 +12,9 @@
             $('pre.' + $this.data('selects'), $p).addClass('selected');
           });
         }, 0);
+		new ClipboardJS('.clip');
     });
-    
+	
     function hideData(form){
         $('.data').addClass('hidden')
         $('.spinner').addClass('showSpinner')
@@ -66,23 +67,26 @@
             <a data-selects='source' class=''>Source Bibframe</a>
             <a data-selects='full' class=''>Bibframe + Schema.org</a>
             <a data-selects='schema'  class='selected'>Schema.org</a>
+			<button class="clip" data-clipboard-target=".datapanel.selected code" title="Copy to clipbard">
+			    <img src="{{ url_for('static', filename='clipboard/clippy.svg') }}" width="13" alt="Copy to clipboard">
+			</button>
         </div>
         {% if dataSource %}
-            <pre class="datapanel source " id="data-source">
+            <pre class="datapanel clip source " id="data-source">
                 <code class=" {{ diplaylang }} ">
 {{ dataSource }}
                 </code>
             </pre>
             {% endif %} <!-- dataSource -->
         {% if dataFull %}
-            <pre class="datapanel full" id="data-full">
+            <pre class="datapanel clip full" id="data-full">
                 <code class=" {{ diplaylang }} ">
 {{ dataFull }}
                 </code>
             </pre>
             {% endif %} <!-- dataFull -->
         {% if dataSchema %}
-            <pre class="datapanel schema selected" id="data-schema">
+            <pre class="datapanel clip schema selected" id="data-schema">
                 <code class=" {{ diplaylang }} ">
 {{ dataSchema }}
                 </code>

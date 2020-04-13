@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash
+from flask import Flask, render_template, flash, redirect
 from config import Config
 from compare import Compare
 
@@ -13,6 +13,12 @@ def root():
 @app.route('/compare', methods=['GET','POST'])
 def webcompare():
     return Compare().compare()
+
+@app.route('/flush', methods=['GET'])
+def flush():
+    Compare().flush()
+    return redirect("/index", code=302)
+
 
 
 if __name__ == '__main__':

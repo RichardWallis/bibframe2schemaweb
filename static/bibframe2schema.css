@@ -140,6 +140,10 @@ input, select {
 }
 .ds-selector-tabs pre.selected {
   display: block;
+} 
+  
+.clip {
+	margin-left: 5px;
 }
 .datapanel {
     margin-top: 0;
