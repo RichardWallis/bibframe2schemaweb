@@ -6,6 +6,12 @@
         {% else %}
         <title>bibframe2schema.org</title>
         {% endif %}
+    
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+	<link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon-96x96.png') }}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+	
 	<link rel="stylesheet" href="{{ url_for('static', filename='bibframe2schema.css') }}">
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 	
@@ -22,6 +28,8 @@
             <a href="/index">Home</a>
             <a href="/compare">Compare Schema</a>
             <a href="https://www.w3.org/community/bibframe2schema/">Community Group</a>
+			<a href="https://www.w3.org/community/bibframe2schema/wiki">Wiki</a>
+			<a href="https://lists.w3.org/Archives/Public/public-bibframe2schema/">Mailing List</a>
         </div>
         <hr>
         <div class="messages">

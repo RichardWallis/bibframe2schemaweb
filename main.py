@@ -1,9 +1,10 @@
+import sys
 from flask import Flask, render_template, flash, redirect
-from config import Config
+import config
 from compare import Compare
 
 app = Flask(__name__)
-app.config.from_object(Config)
+app.config.from_object(config.Config)
 
 @app.route('/')
 @app.route('/index')
@@ -22,6 +23,11 @@ def flush():
 
 
 if __name__ == '__main__':
+    for arg in sys.argv:
+        if arg == '-test':
+            config.TestMode = True
+            print("RUNNIG IN TEST MODE %s"% config.TestMode)
+            
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
     # can be configured by adding an `entrypoint` to app.yaml.

@@ -1,6 +1,6 @@
 ###################################################################
 # bibframe2schema.sparql
-# Version v0.5
+# Version v0.6
 # 
 # SPARQL Script to add Schema.org triples to Bibframe RDF description
 # Assumes definition of bf:Work, bf:Instance
@@ -42,6 +42,10 @@ INSERT {
         schema:exampleOfWork ?work ;
         schema:name ?instName ;
         schema:description ?desc, ?note ;
+        schema:author ?creator ;
+        schema:contributor ?contributor ;
+        schema:inLanguage ?languageCode ;
+        schema:about ?topic, ?subjectWork, ?subjectOrg, ?subjectPerson ;
         schema:isbn ?isbnVal ;
         schema:issn ?issnVal ;
         schema:datePublished ?publicationDate ;
@@ -60,6 +64,10 @@ INSERT {
       schema:exampleOfWork ?inst ;
       schema:name ?instName ;
       schema:description ?desc, ?note ;
+      schema:author ?creator ;
+      schema:contributor ?contributor ;
+      schema:inLanguage ?languageCode ;
+      schema:about ?topic, ?subjectWork, ?subjectOrg, ?subjectPerson ;
       schema:isbn ?isbnVal ;
       schema:issn ?issnVal ;
       schema:datePublished ?publicationDate ;
@@ -71,7 +79,7 @@ INSERT {
       schema:isPartOf ?series ;
       schema:publisher ?publisherOrganization ;
       schema:sku ?shelf ;
-      schema:sdDatePublished "[[TODAY]]";
+      schema:sdDatePublished "[TODAY]]";
       schema:sdLicense [[SDLICENSE]];
       schema:sdPublisher [[SDPUBLISHER]].
       

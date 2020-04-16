@@ -1,26 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<script type="text/javascript">
-    $(document).ready(function(){
-       setTimeout(function(){
-          $('.ds-selector-tabs .selectors a').click(function() {
-            var $this = $(this);
-            var $p = $this.parents('.ds-selector-tabs');
-            $('.selected', $p).removeClass('selected');
-            $this.addClass('selected');
-            $('pre.' + $this.data('selects'), $p).addClass('selected');
-          });
-        }, 0);
-		new ClipboardJS('.clip');
-    });
-	
-    function hideData(form){
-        $('.data').addClass('hidden')
-        $('.spinner').addClass('showSpinner')
-        return true
-    }
-</script>
+<script type="text/javascript" src="{{ url_for('static', filename='compare.js') }}"></script>
+
+
 <h1>Compare Schema</h1>
 <div class="content">
     <div class="selectionPanel">
@@ -67,9 +50,12 @@
             <a data-selects='source' class=''>Source Bibframe</a>
             <a data-selects='full' class=''>Bibframe + Schema.org</a>
             <a data-selects='schema'  class='selected'>Schema.org</a>
-			<button class="clip" data-clipboard-target=".datapanel.selected code" title="Copy to clipbard">
-			    <img src="{{ url_for('static', filename='clipboard/clippy.svg') }}" width="13" alt="Copy to clipboard">
-			</button>
+			<div class="tooltip">
+				<button class="clip" data-clipboard-target=".datapanel.selected code" title="Copy to clipbard">
+				    <img src="{{ url_for('static', filename='clipboard/clippy.svg') }}" width="13" alt="Copy to clipboard">
+				</button>
+				<span class="tooltiptext">Copied</span>
+			</div>
         </div>
         {% if dataSource %}
             <pre class="datapanel clip source " id="data-source">

@@ -1,9 +1,10 @@
 import os
+import re
 from flask import Flask, render_template, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField,TextAreaField
 from urllib.request import urlopen
-
+from urllib.parse import urlparse
 import xml.dom.minidom
 
 import json
@@ -15,12 +16,16 @@ from rdflib.serializer import Serializer
 rdflib.plugin.register("jsonld", Parser, "rdflib_jsonld.parser", "JsonLDParser")
 rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLDSerializer")
 
+import config
+
 FLATTENIDS = True
-TOKENFILE= "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testtokens.json"
-#TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/master/tokens.json"
+TESTTOKENFILE= "file:./testtokens.json"
+#TESTTOKENFILE= "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testtokens.json"
+TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/master/tokens.json"
 TOKENS = None
-SPARQLSCRIPT = "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testbibframe2schema.sparql"
-#SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/query/bibframe2schema.sparql"
+TESTSPARQLSCRIPT = "file:./testbibframe2schema.sparql"
+#TESTSPARQLSCRIPT = "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testbibframe2schema.sparql"
+SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/query/bibframe2schema.sparql"
 SCHEMAONLY="""
 prefix schema: <http://schema.org/> 
 DELETE {
@@ -28,6 +33,16 @@ DELETE {
 } WHERE {
     ?s ?p ?o.
     FILTER ( ! (strstarts(str(?p),"http://schema.org") || strstarts(str(?o),"http://schema.org")) )
+}"""
+CHECK4BF = """
+SELECT * WHERE {
+    {
+        ?s a <http://id.loc.gov/ontologies/bibframe/Work> .
+    } UNION {
+        ?s a <http://id.loc.gov/ontologies/bibframe/Instance> .
+    } UNION {
+        ?s a <http://id.loc.gov/ontologies/bibframe/Item> .
+    }
 }"""
 
 class Compare():
@@ -40,6 +55,13 @@ class Compare():
     dataFull = None
     dataSchema = None
     
+    def graphInit(self):
+        graph = rdflib.Graph()
+        
+    def error(self,mess):
+        self.graphInit()
+        flash(mess)
+        
     def compare(self):
         form = CompareSelectForm()
         dataToDisplay = False
@@ -49,27 +71,32 @@ class Compare():
             self.sourceFormat = form.sourceFormat.data
             self.outFormat = form.outFormat.data
         
-            self.getSource() #Go get imput
+            self.getSource() #Go get input
 
-            if len(self.graph): #We got some imput
-                self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
-                if self.outFormat == "jsonld":
-                    self.dataSource = self.simplyframe(self.dataSource)
+            if len(self.graph): #We got some input
+                try:
+                    self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
+                    if self.outFormat == "jsonld":
+                        self.dataSource = self.simplyframe(self.dataSource)
                 
-                if self.process():
-                    self.dataFull = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
-                    if self.outFormat == "jsonld":
-                        self.dataFull = self.simplyframe(self.dataFull)
+                    if self.process():
+                        self.dataFull = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
+                        if self.outFormat == "jsonld":
+                            self.dataFull = self.simplyframe(self.dataFull)
 
-                if self.schemaOnly():
-                    context = {"schema": "http://schema.org/" }
-                    self.dataSchema = self.graph.serialize(format = self.outFormat ,
-                                    context = context,
-                                    auto_compact=True,
-                                    sort_keys=True).decode('utf-8')
-                                    
-                    if self.outFormat == "jsonld":
-                        self.dataSchema = self.simplyframe(self.dataSchema)
+                        if self.schemaOnly():
+                            context = {"schema": "http://schema.org/" }
+                            self.dataSchema = self.graph.serialize(format = self.outFormat ,
+                                            context = context,
+                                            auto_compact=True,
+                                            sort_keys=True).decode('utf-8')
+                                
+                            if self.outFormat == "jsonld":
+                                self.dataSchema = self.simplyframe(self.dataSchema)
+
+                except Exception as e:
+                    print("Output serialization error: %s" % e)
+                    self.error("Output serialization error: %s" % e)
 
             if self.dataSource or self.dataFull or self.dataSchema:
                 dataToDisplay = True
@@ -84,7 +111,7 @@ class Compare():
                                 dataToDisplay = dataToDisplay)
     
     def getSource(self):
-        self.graph = rdflib.Graph()
+        self.graphInit()
         sformat = self.sourceFormat
         if sformat == 'auto':
             sformat = None
@@ -93,6 +120,14 @@ class Compare():
                 sformat = ext[1:]
                 
         if self.sourceType == 'url':
+            isUrl = False
+            u = urlparse(self.source)
+            if u.scheme and u.netloc:
+                isUrl = True
+            if not isUrl:
+                self.error("Not a valid URL")
+                return
+            
             try:
                 if sformat:
                     self.graph.parse(source=self.source, format=sformat)
@@ -100,11 +135,13 @@ class Compare():
                     self.graph.parse(source=self.source)
             except Exception as e:
                 print("RDF Parse error: %s" % e)
-                flash("Error no identifiable rdf returned: %s" % e)
+                self.error("Error no identifiable rdf returned: %s" % e)
                 
         elif self.sourceType == 'locbib' or self.sourceType == 'loclccn':
             self.getLoc(self.sourceType,self.source)
             
+        self.check4Bibframe()
+        
     def getLoc(self,qtype,id):
         bf=None
         if qtype == "locbib":
@@ -118,36 +155,50 @@ class Compare():
             
             count = doc.getElementsByTagNameNS("http://docs.oasis-open.org/ns/search-ws/sruResponse","numberOfRecords")[0].childNodes[0].nodeValue
             if count != "1":
-                flash("Error '%s' records returned from LoC" % count)
+                self.error("Error '%s' records returned from LoC" % count)
                 return
             
             rdfnodes = doc.getElementsByTagNameNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#","RDF")
             if not rdfnodes:
-                flash("LoC Record load error: Cannot identify RDF:rdf node in respose")
+                self.error("LoC Record load error: Cannot identify RDF:rdf node in respose")
                 print("LoCSRUResponse - XML Load error: Cannot identify <rdf:RDF> node in response")
                 return
             else:
                 bf = rdfnodes[0].toxml()
         except Exception as e:
             print("LoCSRUResponse - XML Load error: %s" % e)
-            flash("Error retreving LoC record: %s" % e)
+            self.error("Error retreving LoC record: %s" % e)
             
-        self.graph.parse(data=bf, format='xml')
+        try:
+            self.graph.parse(data=bf, format='xml')
+        except Exception as e:
+            print("Error parsing returned LoC record: %s" % e)
+            self.error("Error parsing returned LoC record: %s" % e)
+    
+    def check4Bibframe(self):
+        res = self.graph.query(CHECK4BF)
+        if not len(res):
+            self.error("Bibframe Work, Instance, or Item not identified in source")
 
 
         
     def process(self):
-        global SPARQLSCRIPT
-        sparql = URLCache.get(SPARQLSCRIPT)
+        global SPARQLSCRIPT,TESTSPARQLSCRIPT
+        script = SPARQLSCRIPT
+        if config.TestMode:
+            script = TESTSPARQLSCRIPT
+            
+        sparql = URLCache.get(script)
         if sparql:
             sparql = self.tokenSubstitute(sparql)
-            try:
-                self.graph.bind('schema', 'http://schema.org/')
-                self.graph.update(sparql)
-                return True
-            except Exception as e:
-                flash("Sparql parse error: %s" % e)
-                print("Sparql parse error: \n%s" % (e))
+            if sparql:
+                try:
+                    self.graph.bind('schema', 'http://schema.org/')
+                    self.graph.update(sparql)
+                    return True
+                except Exception as e:
+                    self.error("Sparql parse error: %s" % e)
+                    print("Sparql parse error: \n%s" % (e))
         return False
         
     def schemaOnly(self):
@@ -160,7 +211,7 @@ class Compare():
         return False
     
     def tokenSubstitute(self,string):
-        global TOKENFILE,TOKENS
+        global TOKENFILE,TESTTOKENFILE,TOKENS
     
         if not TOKENS:
             today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
@@ -171,14 +222,19 @@ class Compare():
             }
 
             data = None
-            if TOKENFILE:
+            tfile = TOKENFILE
+            if config.TestMode:
+                tfile = TESTTOKENFILE
+                
+            if tfile:
                 try:
-                    tf = URLCache.get(TOKENFILE)
+                    tf = URLCache.get(tfile)
                     if tf:
                         data = json.loads(tf)
                 except Exception as e:
                      print("Token file load error: \n%s" % (e))
-                     flash("Token file load error: \n%s" % (e))
+                     self.error("Token file load error: \n%s" % (e))
+                     return None
  
             if data:
                 TOKENS.update(data)
@@ -186,6 +242,9 @@ class Compare():
         if TOKENS:
             for t, v in TOKENS.items():
                 string = string.replace("[[%s]]" % t ,v)
+        
+        string = re.sub('\\[\\[.*?\\]\\]','',string) #Remove unrecognised tokens
+        
         return string
     
     def simplyframe(self,jsl):
@@ -263,6 +322,7 @@ class URLCache():
                 cls.items[url] = itm
             except Exception as e:
                 print("URL read error url '%s': \n%s" % (url,e))
+                self.error("URL read error url '%s': \n%s" % (url,e))
                 return None
         return itm.data
 
