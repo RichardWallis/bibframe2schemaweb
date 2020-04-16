@@ -65,10 +65,12 @@ input, select {
     height: 2em;
 }
 
+.menuPanel .menuItem {
+    padding: 10px;
+    margin: 0 20;    
+}
 .menuPanel a {
     color: #fff;
-    padding: #10px;
-    margin: 0 20;
     text-decoration: none;
     line-height:2em;
     text-align: center;

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8"/>
@@ -13,23 +14,24 @@
 	<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
 	
 	<link rel="stylesheet" href="{{ url_for('static', filename='bibframe2schema.css') }}">
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 	
 	<link rel="stylesheet" href="{{ url_for('static', filename='highlight/googlecode.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='highlight/highlight.pack.js') }}"></script>
+    <script src="{{ url_for('static', filename='highlight/highlight.pack.js') }}"></script>
     <script>hljs.initHighlightingOnLoad();</script>
-    <script type="text/javascript" src="{{ url_for('static', filename='clipboard/clipboard.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='clipboard/clipboard.min.js') }}"></script>
 
     
     </head>
     <body>
-        <a href="/"><img src="{{ url_for('static', filename='bibframe2schema.png') }}"></a>
+        <a href="/"><img src="{{ url_for('static', filename='bibframe2schema.png') }}" alt="bibframe2schema.org"></a>
         <div class="menuPanel">
-            <a href="/index">Home</a>
-            <a href="/compare">Compare Schema</a>
-            <a href="https://www.w3.org/community/bibframe2schema/">Community Group</a>
-			<a href="https://www.w3.org/community/bibframe2schema/wiki">Wiki</a>
-			<a href="https://lists.w3.org/Archives/Public/public-bibframe2schema/">Mailing List</a>
+            <span class="menuItem"><a href="/index">Home</a></span>
+            <span class="menuItem"><a href="/compare">Compare Schema</a></span>
+            <span class="menuItem"><a href="https://www.w3.org/community/bibframe2schema/">Community Group</a></span>
+			<span class="menuItem"><a href="https://www.w3.org/community/bibframe2schema/wiki">Wiki</a></span>
+            <span class="menuItem"><a href="https://lists.w3.org/Archives/Public/public-bibframe2schema/">Mailing List</a></span>
+            <span class="menuItem"><a href="https://github.com/RichardWallis/bibframe2schema">Code Repository</a></span>
         </div>
         <hr>
         <div class="messages">
@@ -44,5 +46,7 @@
             {% endwith %}
         </div>
         {% block content %}{% endblock %}
+        <hr style="width: 95%;">
+        <p style="font-size: smaller">bibframe2schema.org Community Group - 2020</p>
     </body>
 </html>

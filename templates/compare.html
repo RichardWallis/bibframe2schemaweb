@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<script type="text/javascript" src="{{ url_for('static', filename='compare.js') }}"></script>
+<script src="{{ url_for('static', filename='compare.js') }}"></script>
 
 
 <h1>Compare Schema</h1>
@@ -33,15 +33,15 @@
                 <span class="submit">
                     {{ form.submit() }}
                 </span>
-                <div class="spinner">
-                    <div class="lds-spinner">
-                        <div></div><div></div><div></div><div></div>
-                        <div></div><div></div><div></div><div></div>
-                        <div></div><div></div><div></div><div></div>
-                    </div>
-                </div>
             </p>
         </form>
+    </div>
+    <div class="spinner">
+        <div class="lds-spinner">
+            <div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div>
+        </div>
     </div>
     {% if dataToDisplay %}
     <div class="data">
