@@ -1,7 +1,7 @@
 import sys
 from flask import Flask, render_template, flash, redirect
 import config
-from compare import Compare
+from compare import Compare, TOKENS
 
 app = Flask(__name__)
 app.config.from_object(config.Config)
@@ -18,6 +18,7 @@ def webcompare():
 @app.route('/flush', methods=['GET'])
 def flush():
     Compare().flush()
+    TOKENS = None
     return redirect("/index", code=302)
 
 
