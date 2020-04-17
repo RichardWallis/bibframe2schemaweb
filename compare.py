@@ -65,14 +65,19 @@ class Compare():
     def compare(self):
         form = CompareSelectForm()
         dataToDisplay = False
-        if form.source.data:            
-            self.source = form.source.data
-            self.sourceType = form.sourceType.data
-            self.sourceFormat = form.sourceFormat.data
-            self.outFormat = form.outFormat.data
+        self.source = form.source.data
+        self.sourceType = form.sourceType.data
+        self.sourceFormat = form.sourceFormat.data
+        self.outFormat = form.outFormat.data
         
+        if self.sourceType.startswith('http'):  # A sample file!!
+            form.source.data = self.source = self.sourceType
+            form.sourceType.data = self.sourceType = 'url'
+        
+        if self.source:
+            
             self.getSource() #Go get input
-
+            
             if len(self.graph): #We got some input
                 try:
                     self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
@@ -112,6 +117,7 @@ class Compare():
     
     def getSource(self):
         self.graphInit()
+ 
         sformat = self.sourceFormat
         if sformat == 'auto':
             sformat = None
@@ -141,7 +147,7 @@ class Compare():
             self.getLoc(self.sourceType,self.source)
             
         self.check4Bibframe()
-        
+
     def getLoc(self,qtype,id):
         bf=None
         if qtype == "locbib":
@@ -294,7 +300,10 @@ class Compare():
 class CompareSelectForm(FlaskForm):
     source = StringField('Source')
     submit = SubmitField('Search')
-    sourceType = SelectField('Source Type', choices=[('url','URL'),('locbib','LoC Bib ID'),('loclccn','LoC LCCN')])
+    sourceType = SelectField('Source Type', choices=[('url','URL'),
+                                ('locbib','LoC Bib ID'),
+                                ('loclccn','LoC LCCN'),
+                                ('https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/tests/source/LCCN-98033893.xml','Sample Source')])
     sourceFormat = SelectField('Source Format', choices=[('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle')])
     outFormat = SelectField('Disply Format', choices=[('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle')])
     
