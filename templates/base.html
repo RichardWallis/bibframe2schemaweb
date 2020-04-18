@@ -21,17 +21,29 @@
     <script>hljs.initHighlightingOnLoad();</script>
     <script src="{{ url_for('static', filename='clipboard/clipboard.min.js') }}"></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<script>
+		function navFunction() {
+		  var x = document.getElementById("myTopnav");
+		  if (x.className === "topnav") {
+		    x.className += " responsive";
+		  } else {
+		    x.className = "topnav";
+		  }
+		}
+	</script>
     
     </head>
     <body>
-        <a href="/"><img src="{{ url_for('static', filename='bibframe2schema.png') }}" alt="bibframe2schema.org"></a>
-        <div class="menuPanel">
-            <span class="menuItem"><a href="/index">Home</a></span>
-            <span class="menuItem"><a href="/compare">Compare Schema</a></span>
-            <span class="menuItem"><a href="https://www.w3.org/community/bibframe2schema/">Community Group</a></span>
-			<span class="menuItem"><a href="https://www.w3.org/community/bibframe2schema/wiki">Wiki</a></span>
-            <span class="menuItem"><a href="https://lists.w3.org/Archives/Public/public-bibframe2schema/">Mailing List</a></span>
-            <span class="menuItem"><a href="https://github.com/RichardWallis/bibframe2schema">Code Repository</a></span>
+        <a href="/"><img class="logo" src="{{ url_for('static', filename='bibframe2schema.png') }}" alt="bibframe2schema.org"></a>
+        <div class="topnav" id="myTopnav">
+            <a href="/index">Home</a>
+            <a href="/compare">Compare Schema</a>
+            <a href="https://www.w3.org/community/bibframe2schema/">Community</a>
+			<a href="https://www.w3.org/community/bibframe2schema/wiki">Wiki</a>
+            <a href="https://lists.w3.org/Archives/Public/public-bibframe2schema/">Mailing List</a>
+            <a href="https://github.com/RichardWallis/bibframe2schema">Code</a>
+			<a href="javascript:void(0);" class="icon" onclick="navFunction()"><i class="fa fa-bars"></i></a>
         </div>
         <hr>
         <div class="messages">

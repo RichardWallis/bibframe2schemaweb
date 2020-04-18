@@ -10,24 +10,24 @@
         <form method="post" onsubmit="return hideData(this)" novalidate>
             {{ form.hidden_tag() }}
             <p>
-                <span class="selectInput">
+                <div >
                     {{ form.source.label }}
-                    {{ form.source(size=75) }}
-                </span>
+					{{ form.source() }}
+                </div>
             </p>
             <p>
-                <span class="selectInput">
+                <div class="selectInput">
                     {{ form.sourceType.label }}
                     {{ form.sourceType() }}
-                </span>
-                <span class="selectInput">
+                </div>
+                <div class="selectInput">
                     {{ form.sourceFormat.label }}
                     {{ form.sourceFormat() }}
-                </span>
-                <span class="selectInput">
+                </div>
+                <div class="selectInput">
                     {{ form.outFormat.label }}
                     {{ form.outFormat() }}
-                </span>
+                </div>
             </p>
             <p>
                 <span class="submit">
