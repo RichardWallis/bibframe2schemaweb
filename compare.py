@@ -1,6 +1,10 @@
+import logging
+logging.basicConfig(level=logging.INFO) # dev_appserver.py --log_level debug .
+log = logging.getLogger(__name__)
+
 import os
 import re
-from flask import Flask, render_template, flash
+from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField,TextAreaField
 from urllib.request import urlopen
@@ -54,6 +58,11 @@ class Compare():
     dataSource = None
     dataFull = None
     dataSchema = None
+    sampleFile = False
+    gotSource = False
+    gotBf = False
+    processed = False
+    
     
     def graphInit(self):
         graph = rdflib.Graph()
@@ -71,6 +80,7 @@ class Compare():
         self.outFormat = form.outFormat.data
         
         if self.sourceType.startswith('http'):  # A sample file!!
+            self.sampleFile = True
             form.source.data = self.source = self.sourceType
             form.sourceType.data = self.sourceType = 'url'
         
@@ -79,12 +89,14 @@ class Compare():
             self.getSource() #Go get input
             
             if len(self.graph): #We got some input
+                self.gotSource = True
                 try:
                     self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
                     if self.outFormat == "jsonld":
                         self.dataSource = self.simplyframe(self.dataSource)
                 
                     if self.process():
+                        self.processed = True
                         self.dataFull = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
                         if self.outFormat == "jsonld":
                             self.dataFull = self.simplyframe(self.dataFull)
@@ -105,6 +117,8 @@ class Compare():
 
             if self.dataSource or self.dataFull or self.dataSchema:
                 dataToDisplay = True
+                
+        self.logRequest()
 
         return render_template('compare.html',
                                 title='Compare Schema',
@@ -184,7 +198,10 @@ class Compare():
     def check4Bibframe(self):
         res = self.graph.query(CHECK4BF)
         if not len(res):
+            self.gotBf = False
             self.error("Bibframe Work, Instance, or Item not identified in source")
+        else:
+            self.gotBf = True
 
 
         
@@ -295,6 +312,41 @@ class Compare():
     def flush(self):
         URLCache.flush()
         flash("URLCache flushed")
+        
+    def logRequest(self):
+        if request.method == 'POST':
+            caller = request.environ.get('HTTP_X_FORWARDED_FOR')
+            if not caller:
+                caller = request.environ.get('REMOTE_ADDR')
+            stype = self.sourceType
+            source = self.source
+            if self.sampleFile:
+                stype = "Sample"
+                source = ""
+            oformat = self.outFormat
+            
+            gs = gb = "No "
+            pr = "Not "
+            if self.gotSource:
+                gs = ""
+            if self.gotBf:
+                gb = ""
+            if self.processed:
+                pr = ""
+                
+            dt = datetime.datetime.now()
+            if dt.microsecond >= 500000:
+                dt = dt + datetime.timedelta(seconds=1)
+            dt = dt.replace(microsecond=0)
+            
+            
+            log.info("%s - %s - %s - %s - %sSource %sBF %sProcessed" % (caller,
+                                        stype,
+                                        source,
+                                        oformat,
+                                        gs,
+                                        gb,
+                                        pr))
                 
 
 class CompareSelectForm(FlaskForm):

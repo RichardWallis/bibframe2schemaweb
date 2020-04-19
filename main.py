@@ -1,5 +1,5 @@
 import sys
-from flask import Flask, render_template, flash, redirect
+from flask import Flask, render_template, flash, redirect, request
 import config
 from compare import Compare
 

@@ -21,7 +21,7 @@
     <script>hljs.initHighlightingOnLoad();</script>
     <script src="{{ url_for('static', filename='clipboard/clipboard.min.js') }}"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<script>
 		function navFunction() {
 		  var x = document.getElementById("myTopnav");
@@ -43,7 +43,7 @@
 			<a href="https://www.w3.org/community/bibframe2schema/wiki">Wiki</a>
             <a href="https://lists.w3.org/Archives/Public/public-bibframe2schema/">Mailing List</a>
             <a href="https://github.com/RichardWallis/bibframe2schema">Code</a>
-			<a href="javascript:void(0);" class="icon" onclick="navFunction()"><i class="fa fa-bars"></i></a>
+			<a href="javascript:void(0);" class="icon" onclick="navFunction()"><img height="20" src="{{ url_for('static', filename='menu-bar-icon-white.png') }} "></a>
         </div>
         <hr>
         <div class="messages">
@@ -59,6 +59,6 @@
         </div>
         {% block content %}{% endblock %}
         <hr style="width: 95%;">
-        <p style="font-size: smaller">bibframe2schema.org Community Group - 2020</p>
+        <p style="font-size: smaller">V1.01 - bibframe2schema.org Community Group - 2020</p>
     </body>
 </html>

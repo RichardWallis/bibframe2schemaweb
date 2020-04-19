@@ -5,8 +5,3 @@ class Config(object):
     
     
 TestMode = False
-def testModeSet(mode=False):
-        global TestMode
-        print("setting %s" % mode)
-        TestMode = mode
-        
