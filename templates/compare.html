@@ -6,8 +6,9 @@
 <script src="{{ url_for('static', filename='compare.js') }}"></script>
 
 
-<h1>Comparison Viewer</h1>
+    <h1>Comparison Viewer</h1>
 <div class="content">
+    <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span>
     <div class="selectionPanel">
         <form method="post" onsubmit="return hideData(this)" novalidate>
             {{ form.hidden_tag() }}
