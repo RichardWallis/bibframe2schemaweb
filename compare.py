@@ -127,7 +127,8 @@ class Compare():
                                 dataFull = self.dataFull,
                                 dataSchema = self.dataSchema,
                                 diplaylang = self.outFormat,
-                                dataToDisplay = dataToDisplay)
+                                dataToDisplay = dataToDisplay,
+                                scriptUsed = SPARQLSCRIPT)
     
     def getSource(self):
         self.graphInit()

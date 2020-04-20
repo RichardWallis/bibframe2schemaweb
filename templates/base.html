@@ -59,6 +59,41 @@
         </div>
         {% block content %}{% endblock %}
         <hr style="width: 95%;">
-        <p style="font-size: smaller">V1.01 - bibframe2schema.org Community Group - 2020</p>
+        <p style="font-size: smaller">V1.02 - bibframe2schema.org Community Group - 2020</p>
     </body>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=MEASUREMENT_ID"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-28146141-2');
+	</script>
+	<!-- Schema.org defintion -->
+	<script type="application/ld+json">
+	{
+		"@context": "http://schema.org",
+		"@type": "Organization",
+		"@id": "https://bibframe2schema.org",
+		"name": "bibframe2schema.org",
+		"description": "A community initative to develop of a reference mapping between
+		 the BIBFRAME 2.0 and Schema.org vocabularies, and sharing the of reference software implementations.",
+		 "logo": "https://bibframe2schema.org/static/bibframe2schema.png",
+		 "email": "info@bibframe2schema.org",
+		"url": "https://bibframe2schema.org",
+		"sameAs": "https://www.w3.org/community/bibframe2schema/",
+		"contactPoint": {
+			"@type": "ContactPoint",
+			"email": "info@bibframe2schema.org",
+			"contactType": "Information"
+		},
+		"founder": {
+			"@type": "Person",
+			"name": "Richard Wallis",
+			"sameAs": ["https://www.dataliberate.com/richardwallis/",
+						"https://twitter.com/rjw"]
+		}
+	}
+	</script>
 </html>

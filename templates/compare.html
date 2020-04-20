@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+<link rel="canonical" href="https://bibframe2schema.org/compare" />
+
 <script src="{{ url_for('static', filename='compare.js') }}"></script>
 
 
@@ -79,6 +81,7 @@
             </pre>
          {% endif %} <!-- dataSchema -->
     </div>
+	<span style="font-size: small; font-style: italic;"><a href="{{ scriptUsed }}">SPARQL Script</a> used in this mapping</span>
     {% endif %} <!-- dataToDisplay -->
         
 </div>
