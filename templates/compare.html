@@ -81,6 +81,9 @@
             </pre>
          {% endif %} <!-- dataSchema -->
     </div>
+	{% if akLoC %}
+        <span style="font-size: small; font-style: italic;">Bibframe data sourced via an API provided by <a href="https://www.loc.gov/standards/sru/resources/lcServers.html">The Library of Congress</a></span><br/>
+    {% endif %}
 	<span style="font-size: small; font-style: italic;"><a href="{{ scriptUsed }}">SPARQL Script</a> used in this comparison</span>
     {% endif %} <!-- dataToDisplay -->
         

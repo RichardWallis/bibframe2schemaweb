@@ -62,6 +62,7 @@ class Compare():
     gotSource = False
     gotBf = False
     processed = False
+    akLoC = False
     
     
     def graphInit(self):
@@ -128,7 +129,8 @@ class Compare():
                                 dataSchema = self.dataSchema,
                                 diplaylang = self.outFormat,
                                 dataToDisplay = dataToDisplay,
-                                scriptUsed = SPARQLSCRIPT)
+                                scriptUsed = SPARQLSCRIPT,
+                                akLoC = self.akLoC)
     
     def getSource(self):
         self.graphInit()
@@ -192,6 +194,7 @@ class Compare():
             
         try:
             self.graph.parse(data=bf, format='xml')
+            self.akLoC = True
         except Exception as e:
             print("Error parsing returned LoC record: %s" % e)
             self.error("Error parsing returned LoC record: %s" % e)
