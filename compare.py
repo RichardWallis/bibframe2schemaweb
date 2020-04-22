@@ -74,6 +74,7 @@ class Compare():
         
     def compare(self):
         form = CompareSelectForm()
+        pasteForm = PasteSelectForm()
         dataToDisplay = False
         self.source = form.source.data
         self.sourceType = form.sourceType.data
@@ -124,6 +125,7 @@ class Compare():
         return render_template('compare.html',
                                 title='Compare Schema',
                                 form=form,
+                                pasteForm=pasteForm,
                                 dataSource = self.dataSource,
                                 dataFull = self.dataFull,
                                 dataSchema = self.dataSchema,
@@ -351,7 +353,10 @@ class Compare():
                                         gs,
                                         gb,
                                         pr))
-                
+   
+   
+INTYPES = [('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle')]
+OUTTYPES = [('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle')]             
 
 class CompareSelectForm(FlaskForm):
     source = StringField('Source')
@@ -360,8 +365,14 @@ class CompareSelectForm(FlaskForm):
                                 ('locbib','LoC Bib ID'),
                                 ('loclccn','LoC LCCN'),
                                 ('https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/tests/source/LCCN-98033893.xml','Sample Source')])
-    sourceFormat = SelectField('Source Format', choices=[('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle')])
-    outFormat = SelectField('Disply Format', choices=[('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle')])
+    sourceFormat = SelectField('Source Format', choices=INTYPES)
+    outFormat = SelectField('Disply Format', choices=OUTTYPES)
+
+class PasteSelectForm(FlaskForm):
+    source = TextAreaField('Paste')
+    submit = SubmitField('Process')
+    sourceFormat = SelectField('Source Format', choices=INTYPES)
+    outFormat = SelectField('Disply Format', choices=OUTTYPES)
     
 import datetime
 import urllib.request

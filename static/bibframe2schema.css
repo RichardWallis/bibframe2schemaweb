@@ -176,10 +176,10 @@ input, select {
   background: #ccc;
   cursor: pointer;
 }
-.ds-selector-tabs pre {
+.ds-selector-tabs .ds-selection {
   display: none;
 }
-.ds-selector-tabs pre.selected {
+.ds-selector-tabs .ds-selection.selected {
   display: block;
   padding-top: 0;
   padding-bottom: 0;

@@ -9,36 +9,72 @@
     <h1>Comparison Viewer</h1>
 <div class="content">
     <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span>
-    <div class="selectionPanel">
-        <form method="post" onsubmit="return hideData(this)" novalidate>
-            {{ form.hidden_tag() }}
-            <p>
-                <div >
-                    {{ form.source.label }}
-					{{ form.source() }}
-                </div>
-            </p>
-            <p>
-                <div class="selectInput">
-                    {{ form.sourceType.label }}
-                    {{ form.sourceType() }}
-                </div>
-                <div class="selectInput">
-                    {{ form.sourceFormat.label }}
-                    {{ form.sourceFormat() }}
-                </div>
-                <div class="selectInput">
-                    {{ form.outFormat.label }}
-                    {{ form.outFormat() }}
-                </div>
-            </p>
-            <p>
-                <span class="submit">
-                    {{ form.submit() }}
-                </span>
-            </p>
-        </form>
-    </div>
+    <div class='ds-selector-tabs ds-selector'>
+      <div class='selectors'>
+        <a data-selects='search' class='selected'>Search</a>
+        <a data-selects='upload' class=''>Upload File</a>
+        <a data-selects='paste' class=''>Paste Code</a>
+	  </div>
+	    <div class="selectionPanel ds-selection selected search">
+	        <form method="post" onsubmit="return hideData(this)" novalidate>
+	            {{ form.hidden_tag() }}
+	            <p>
+	                <div >
+	                    {{ form.source.label }}
+						{{ form.source() }}
+	                </div>
+	            </p>
+	            <p>
+	                <div class="selectInput">
+	                    {{ form.sourceType.label }}
+	                    {{ form.sourceType() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ form.sourceFormat.label }}
+	                    {{ form.sourceFormat() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ form.outFormat.label }}
+	                    {{ form.outFormat() }}
+	                </div>
+	            </p>
+	            <p>
+	                <span class="submit">
+	                    {{ form.submit() }}
+	                </span>
+	            </p>
+	        </form>
+	    </div>
+	    <div class="selectionPanel ds-selection upload">
+			<h2>Upload</h2>
+	    </div>
+	    <div class="selectionPanel ds-selection paste">
+	        <form method="post" onsubmit="return hideData(this)" novalidate>
+	            {{ pasteForm.hidden_tag() }}
+	            <p>
+	                <div >
+	                    <!-- {{ pasteForm.source.label }} -->
+						{{ pasteForm.source(rows=10, cols=50, class="pasteSource") }}
+	                </div>
+	            </p>
+	            <p>
+	                <div class="selectInput">
+	                    {{ pasteForm.sourceFormat.label }}
+	                    {{ pasteForm.sourceFormat() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ pasteForm.outFormat.label }}
+	                    {{ pasteForm.outFormat() }}
+	                </div>
+	            </p>
+	            <p>
+	                <span class="submit">
+	                    {{ pasteForm.submit() }}
+	                </span>
+	            </p>
+	        </form>
+	    </div>
+	</div>
     <div class="spinner">
         <div class="lds-spinner">
             <div></div><div></div><div></div><div></div>
@@ -53,7 +89,7 @@
             <a data-selects='source' class=''>Source Bibframe</a>
             <a data-selects='full' class=''>Bibframe + Schema.org</a>
             <a data-selects='schema'  class='selected'>Schema.org</a>
-			<div class="tooltip">
+			<div class="tooltip">	
 				<button class="clip" data-clipboard-target=".datapanel.selected code" title="Copy to clipbard">
 				    <img src="{{ url_for('static', filename='clipboard/clippy.svg') }}" width="13" alt="Copy to clipboard">
 				</button>
@@ -61,21 +97,21 @@
 			</div>
         </div>
         {% if dataSource %}
-            <pre class="datapanel clip source " id="data-source">
+            <pre class="ds-selection clip source " id="data-source">
                 <code class=" {{ diplaylang }} ">
 {{ dataSource }}
                 </code>
             </pre>
             {% endif %} <!-- dataSource -->
         {% if dataFull %}
-            <pre class="datapanel clip full" id="data-full">
+            <pre class="ds-selection clip full" id="data-full">
                 <code class=" {{ diplaylang }} ">
 {{ dataFull }}
                 </code>
             </pre>
             {% endif %} <!-- dataFull -->
         {% if dataSchema %}
-            <pre class="datapanel clip schema selected" id="data-schema">
+            <pre class="ds-selection clip schema selected" id="data-schema">
                 <code class=" {{ diplaylang }} ">
 {{ dataSchema }}
                 </code>
