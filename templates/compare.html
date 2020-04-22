@@ -53,23 +53,23 @@
 	            {{ pasteForm.hidden_tag() }}
 	            <p>
 	                <div >
-	                    <!-- {{ pasteForm.source.label }} -->
-						{{ pasteForm.source(rows=10, cols=50, class="pasteSource") }}
+	                    <!-- {{ pasteForm.pasteSource.label }} -->
+						{{ pasteForm.pasteSource(rows=10, cols=100, class="pasteSource", wrap="off", placeholder="Paste your BIBFRAME") }}
 	                </div>
 	            </p>
 	            <p>
 	                <div class="selectInput">
-	                    {{ pasteForm.sourceFormat.label }}
-	                    {{ pasteForm.sourceFormat() }}
+	                    {{ pasteForm.pasteSourceFormat.label }}
+	                    {{ pasteForm.pasteSourceFormat() }}
 	                </div>
 	                <div class="selectInput">
-	                    {{ pasteForm.outFormat.label }}
-	                    {{ pasteForm.outFormat() }}
+	                    {{ pasteForm.pasteOutFormat.label }}
+	                    {{ pasteForm.pasteOutFormat() }}
 	                </div>
 	            </p>
 	            <p>
 	                <span class="submit">
-	                    {{ pasteForm.submit() }}
+	                    {{ pasteForm.pasteSubmit() }}
 	                </span>
 	            </p>
 	        </form>
@@ -90,7 +90,7 @@
             <a data-selects='full' class=''>Bibframe + Schema.org</a>
             <a data-selects='schema'  class='selected'>Schema.org</a>
 			<div class="tooltip">	
-				<button class="clip" data-clipboard-target=".datapanel.selected code" title="Copy to clipbard">
+				<button class="clip" data-clipboard-target=".ds-selection.selected code" title="Copy to clipbard">
 				    <img src="{{ url_for('static', filename='clipboard/clippy.svg') }}" width="13" alt="Copy to clipboard">
 				</button>
 				<span class="tooltiptext">Copied</span>

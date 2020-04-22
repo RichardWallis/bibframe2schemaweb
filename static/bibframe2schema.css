@@ -132,6 +132,11 @@ input, select {
     padding: 5px;
     font-size: 1.2em;
 }
+
+.pasteSource {
+    outline: none;
+    overflow: auto;
+}
 .submit {
     font-size: 1.5em;
     margin-left: 200px;
