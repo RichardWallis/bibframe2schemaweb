@@ -8,7 +8,9 @@
 
     <h1>Comparison Viewer</h1>
 <div class="content">
-    <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span>
+    <p>
+        <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span>
+    </p>
     <div class='ds-selector-tabs ds-selector'>
       <div class='selectors'>
         <a data-selects='search' class='selected'>Search</a>
@@ -46,7 +48,29 @@
 	        </form>
 	    </div>
 	    <div class="selectionPanel ds-selection upload">
-			<h2>Upload</h2>
+	        <form method="post" onsubmit="return hideData(this)" novalidate>
+	            {{ uploadForm.hidden_tag() }}
+	            <p>
+	                <div >
+	                    <!-- {{ pasteForm.pasteSource.label }} -->
+						{{ uploadForm.uploadFile(class="uploadSource") }}
+	                </div>
+	            </p>
+	            <p>
+	                <div class="selectInput">
+	                    {{ uploadForm.uploadSourceFormat.label }}
+	                    {{ uploadForm.uploadSourceFormat() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ uploadForm.uploadOutFormat.label }}
+	                    {{ uploadForm.uploadOutFormat() }}
+	                </div>
+	            </p>
+	            <p>
+	                <span class="submit">
+	                    {{ uploadForm.uploadSubmit() }}
+	                </span>
+	            </p>
 	    </div>
 	    <div class="selectionPanel ds-selection paste">
 	        <form method="post" onsubmit="return hideData(this)" novalidate>
@@ -97,21 +121,21 @@
 			</div>
         </div>
         {% if dataSource %}
-            <pre class="ds-selection clip source " id="data-source">
+            <pre class="ds-selection datapanel clip source " id="data-source">
                 <code class=" {{ diplaylang }} ">
 {{ dataSource }}
                 </code>
             </pre>
             {% endif %} <!-- dataSource -->
         {% if dataFull %}
-            <pre class="ds-selection clip full" id="data-full">
+            <pre class="ds-selection datapanel clip full" id="data-full">
                 <code class=" {{ diplaylang }} ">
 {{ dataFull }}
                 </code>
             </pre>
             {% endif %} <!-- dataFull -->
         {% if dataSchema %}
-            <pre class="ds-selection clip schema selected" id="data-schema">
+            <pre class="ds-selection datapanel clip schema selected" id="data-schema">
                 <code class=" {{ diplaylang }} ">
 {{ dataSchema }}
                 </code>

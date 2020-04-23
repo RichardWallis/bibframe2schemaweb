@@ -7,6 +7,7 @@ import re
 from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField,TextAreaField
+from flask_wtf.file import FileField, FileRequired
 from urllib.request import urlopen
 from urllib.parse import urlparse
 import xml.dom.minidom
@@ -68,8 +69,8 @@ class Compare():
     
     
     def graphInit(self):
-        graph = rdflib.Graph()
-        
+        self.graph = rdflib.Graph()
+
     def error(self,mess):
         self.graphInit()
         flash(mess)
@@ -80,6 +81,7 @@ class Compare():
         self.dataSource = self.dataFull = self.dataSchema = None
         self.form = CompareSelectForm()
         self.pasteForm = PasteSelectForm()
+        self.uploadForm = UploadSelectForm()
         if not self.loadSourceInputs():
             if not self.loadPasteInputs():
                 self.graphInit()
@@ -113,13 +115,14 @@ class Compare():
 
             if self.dataSource or self.dataFull or self.dataSchema:
                 dataToDisplay = True
-            
+            print("%s %s %s" % (len(self.dataSource),len(self.dataFull),len(self.dataSchema)))
             self.logRequest()
 
         return render_template('compare.html',
                                 title='Compare Schema',
                                 form=self.form,
                                 pasteForm=self.pasteForm,
+                                uploadForm=self.uploadForm,
                                 dataSource = self.dataSource,
                                 dataFull = self.dataFull,
                                 dataSchema = self.dataSchema,
@@ -143,6 +146,7 @@ class Compare():
         
             if self.source:
                 self.getSource() #Go get input
+
             if len(self.graph):
                 loaded = True
         return loaded
@@ -155,16 +159,22 @@ class Compare():
             data = data.strip()
             self.sourceFormat = self.pasteForm.pasteSourceFormat.data
             self.outputFormat = self.outFormat = self.pasteForm.pasteOutFormat.data
-            print("Data: >>>>>%s" % data)
             if self.sourceFormat == "auto":
                 if data.startswith("<?xml version="):
-                    self.sourceFormat == "xml"
-                else:
-                    try:
-                        self.graph.parse(data=data)
-                    except Exception as e:
-                        self.error("XML Parse error: %s" % e)
-                    
+                    self.sourceFormat = "xml"
+                elif "@context" in data:
+                    self.sourceFormat = "jsonld"
+                elif "@id" in data:
+                    self.sourceFormat = "jsonld"
+                elif "@type" in data:
+                    self.sourceFormat = "jsonld"
+                elif "@prefix" in data:
+                    self.sourceFormat = "turtle"
+                elif "<http:" in data:
+                    self.sourceFormat = "turtle"
+                elif "<https:" in data:
+                    self.sourceFormat = "turtle"
+
             if self.sourceFormat == "xml":
                 doc = None
                 try:
@@ -181,7 +191,20 @@ class Compare():
                         self.error("Error parsing RDF: %s" % e)
                 else:
                     self.error("RDF Parse error number of RDF nodes identified: %s - should only be 1" % len(rnodes) )
-                
+                    
+            elif self.sourceFormat == "jsonld":
+                try:
+                    self.graph.parse(data=data, format='jsonld')
+                except Exception as e:
+                    self.error("Error parsing jsonld: %s" % e)
+
+            elif self.sourceFormat == "turtle":
+                try:
+                    self.graph.parse(data=data, format='turtle')
+                except Exception as e:
+                    self.error("Error parsing turtle: %s" % e)
+
+
             if len(self.graph):
                 loaded = True
 
@@ -426,6 +449,12 @@ class PasteSelectForm(FlaskForm):
     pasteSubmit = SubmitField('Process')
     pasteSourceFormat = SelectField('Source Format', choices=INTYPES)
     pasteOutFormat = SelectField('Disply Format', choices=OUTTYPES)
+    
+class UploadSelectForm(FlaskForm):
+    uploadFile = FileField('File')
+    uploadSubmit = SubmitField('Upload')
+    uploadSourceFormat = SelectField('Source Format', choices=INTYPES)
+    uploadOutFormat = SelectField('Disply Format', choices=OUTTYPES)
     
 import datetime
 import urllib.request
