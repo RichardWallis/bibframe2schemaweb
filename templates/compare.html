@@ -48,7 +48,7 @@
 	        </form>
 	    </div>
 	    <div class="selectionPanel ds-selection upload">
-	        <form method="post" onsubmit="return hideData(this)" novalidate>
+	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data">
 	            {{ uploadForm.hidden_tag() }}
 	            <p>
 	                <div >

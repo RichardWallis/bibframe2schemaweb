@@ -7,7 +7,7 @@ import re
 from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField,TextAreaField
-from flask_wtf.file import FileField, FileRequired
+from flask_wtf.file import  FileField, FileAllowed, FileRequired
 from urllib.request import urlopen
 from urllib.parse import urlparse
 import xml.dom.minidom
@@ -84,7 +84,8 @@ class Compare():
         self.uploadForm = UploadSelectForm()
         if not self.loadSourceInputs():
             if not self.loadPasteInputs():
-                self.graphInit()
+                if not self.loadUploadInputs():
+                    self.graphInit()
 
         if len(self.graph): #We got some input
             self.gotSource = True
@@ -205,6 +206,21 @@ class Compare():
                     self.error("Error parsing turtle: %s" % e)
 
 
+            if len(self.graph):
+                loaded = True
+
+        return loaded
+
+    def loadUploadInputs(self):
+        loaded = False
+        action = "upload"
+        print("A")
+        if self.uploadForm.uploadSubmit.data:
+            
+            print("B")
+            filename = self.uploadForm.uploadFile.data
+            print("..%s.." % filename)
+            print(">>>%s<<<" % self.uploadForm.uploadFile)
             if len(self.graph):
                 loaded = True
 
@@ -451,7 +467,10 @@ class PasteSelectForm(FlaskForm):
     pasteOutFormat = SelectField('Disply Format', choices=OUTTYPES)
     
 class UploadSelectForm(FlaskForm):
-    uploadFile = FileField('File')
+    ftypes = ['jsonld']
+    ftypes.extend(rdflib.util.SUFFIX_FORMAT_MAP.values())
+    uploadFile = FileField(validators=[FileAllowed(ftypes, 'RDF only!'), FileRequired('File was empty!')])
+    #uploadFile = FileField()
     uploadSubmit = SubmitField('Upload')
     uploadSourceFormat = SelectField('Source Format', choices=INTYPES)
     uploadOutFormat = SelectField('Disply Format', choices=OUTTYPES)
