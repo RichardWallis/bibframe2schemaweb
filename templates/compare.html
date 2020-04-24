@@ -5,13 +5,25 @@
 
 <script src="{{ url_for('static', filename='compare.js') }}"></script>
 
+<script>
+
+    $(document).ready(function(){
+        setTimeout(function(){
+            var sel = $('.inputselector a[data-selects="upload"]');
+            if (typeof sel.onclick == "function") {
+                elem.onclick.apply(sel);
+            }
+        }, 0);
+    })
+ 
+</script>
 
     <h1>Comparison Viewer</h1>
 <div class="content">
     <p>
         <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span>
     </p>
-    <div class='ds-selector-tabs ds-selector'>
+    <div class='ds-selector-tabs ds-selector inputselector'>
       <div class='selectors'>
         <a data-selects='search' class='selected'>Search</a>
         <a data-selects='upload' class=''>Upload File</a>
@@ -54,13 +66,10 @@
 	                <div >
 	                    <!-- {{ pasteForm.pasteSource.label }} -->
 						{{ uploadForm.uploadFile(class="uploadSource") }}
+                        <span class="uploadValidationError">{{ ', '.join(uploadForm.uploadFile.errors) }}</span>
 	                </div>
 	            </p>
 	            <p>
-	                <div class="selectInput">
-	                    {{ uploadForm.uploadSourceFormat.label }}
-	                    {{ uploadForm.uploadSourceFormat() }}
-	                </div>
 	                <div class="selectInput">
 	                    {{ uploadForm.uploadOutFormat.label }}
 	                    {{ uploadForm.uploadOutFormat() }}

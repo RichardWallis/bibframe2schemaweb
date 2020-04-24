@@ -139,6 +139,9 @@ input, select {
     font-size: 1.2em;
     
 }
+.uploadValidationError {
+    color: red;
+}
 .pasteSource {
     outline: none;
     overflow: auto;

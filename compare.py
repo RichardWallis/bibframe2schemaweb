@@ -8,6 +8,7 @@ from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField,TextAreaField
 from flask_wtf.file import  FileField, FileAllowed, FileRequired
+from werkzeug.utils import secure_filename
 from urllib.request import urlopen
 from urllib.parse import urlparse
 import xml.dom.minidom
@@ -215,12 +216,12 @@ class Compare():
         loaded = False
         action = "upload"
         print("A")
-        if self.uploadForm.uploadSubmit.data:
-            
-            print("B")
-            filename = self.uploadForm.uploadFile.data
+        if self.uploadForm.uploadSubmit.data and self.uploadForm.validate_on_submit():
+            f = self.uploadForm.uploadFile.data
+            filename = secure_filename(f.filename)
             print("..%s.." % filename)
-            print(">>>%s<<<" % self.uploadForm.uploadFile)
+            data = f.read()
+
             if len(self.graph):
                 loaded = True
 
@@ -469,10 +470,9 @@ class PasteSelectForm(FlaskForm):
 class UploadSelectForm(FlaskForm):
     ftypes = ['jsonld']
     ftypes.extend(rdflib.util.SUFFIX_FORMAT_MAP.values())
-    uploadFile = FileField(validators=[FileAllowed(ftypes, 'RDF only!'), FileRequired('File was empty!')])
+    uploadFile = FileField(validators=[FileAllowed(ftypes, 'RDF format files only!'), FileRequired('File was empty!')])
     #uploadFile = FileField()
     uploadSubmit = SubmitField('Upload')
-    uploadSourceFormat = SelectField('Source Format', choices=INTYPES)
     uploadOutFormat = SelectField('Disply Format', choices=OUTTYPES)
     
 import datetime
