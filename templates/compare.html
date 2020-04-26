@@ -7,15 +7,20 @@
 
 <script>
 
-    $(document).ready(function(){
-        setTimeout(function(){
-            var sel = $('.inputselector a[data-selects="upload"]');
-            if (typeof sel.onclick == "function") {
-                elem.onclick.apply(sel);
-            }
-        }, 0);
-    })
- 
+	var $presel = "{{ inputSelect }}";
+	$(document).ready(function(){
+	   setTimeout(function(){
+		   if (typeof $presel !== 'undefined'){
+			var $target = $('.inputselector a[data-selects="' + $presel +'"]')
+	        var $p = $target.parents('.ds-selector-tabs');
+	        $('.selected', $p).removeClass('selected');
+	        $target.addClass('selected');
+			var $selectorpanel = $('.ds-selection.' + $target.data('selects'), $p)
+	        $selectorpanel.addClass('selected');
+		}
+    });
+  }, 0);
+		
 </script>
 
     <h1>Comparison Viewer</h1>
@@ -66,6 +71,7 @@
 	                <div >
 	                    <!-- {{ pasteForm.pasteSource.label }} -->
 						{{ uploadForm.uploadFile(class="uploadSource") }}
+						<br/>
                         <span class="uploadValidationError">{{ ', '.join(uploadForm.uploadFile.errors) }}</span>
 	                </div>
 	            </p>
@@ -80,9 +86,10 @@
 	                    {{ uploadForm.uploadSubmit() }}
 	                </span>
 	            </p>
+			</form>
 	    </div>
 	    <div class="selectionPanel ds-selection paste">
-	        <form method="post" onsubmit="return hideData(this)" novalidate>
+	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data" novalidate>
 	            {{ pasteForm.hidden_tag() }}
 	            <p>
 	                <div >
