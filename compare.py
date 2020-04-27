@@ -24,7 +24,7 @@ rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLD
 
 import config
 
-UPLOADTYPES = {'jsonld': 'jsonld','xml':'xml'}
+UPLOADTYPES = {'jsonld': 'jsonld','xml':'xml','nq':'nquads'}
 UPLOADTYPES.update(rdflib.util.SUFFIX_FORMAT_MAP)
 
 FLATTENIDS = True
@@ -75,7 +75,8 @@ class Compare():
     
     
     def graphInit(self):
-        self.graph = rdflib.Graph()
+        #self.graph = rdflib.Graph()
+        self.graph = rdflib.ConjunctiveGraph(identifier=rdflib.URIRef("https://bibframe2schema.org"))
 
     def error(self,mess):
         self.graphInit()
@@ -205,18 +206,11 @@ class Compare():
                 else:
                     self.error("RDF Parse error number of RDF nodes identified: %s - should only be 1" % len(rnodes) )
                     
-            elif self.sourceFormat == "jsonld":
+            else:
                 try:
-                    self.graph.parse(data=data, format='jsonld')
+                    self.graph.parse(data=data, format=self.sourceFormat)
                 except Exception as e:
-                    self.error("Error parsing jsonld: %s" % e)
-
-            elif self.sourceFormat == "turtle":
-                try:
-                    self.graph.parse(data=data, format='turtle')
-                except Exception as e:
-                    self.error("Error parsing turtle: %s" % e)
-
+                    self.error("Error parsing %s: %s" % (self.sourceFormat,e))
 
             if len(self.graph):
                 loaded = True
@@ -473,8 +467,8 @@ class Compare():
                                         pr))
    
    
-INTYPES = [('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle')]
-OUTTYPES = [('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle')]             
+INTYPES = [('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle'),('nt','Triples'),('nquads','Quads')]
+OUTTYPES = [('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle'),('nt','Triples'),('nquads','Quads')]             
 
 class CompareSelectForm(FlaskForm):
     source = StringField('Source')
@@ -493,9 +487,7 @@ class PasteSelectForm(FlaskForm):
     pasteOutFormat = SelectField('Disply Format', choices=OUTTYPES)
     
 class UploadSelectForm(FlaskForm):
-    ftypes = ['jsonld']
-    ftypes.extend(rdflib.util.SUFFIX_FORMAT_MAP.values())
-    uploadFile = FileField(validators=[FileAllowed(ftypes, 'RDF only!'), FileRequired('File was empty!')])
+    uploadFile = FileField(validators=[FileAllowed(UPLOADTYPES, 'RDF only!'), FileRequired('File was empty!')])
     uploadSubmit = SubmitField('Upload')
     uploadOutFormat = SelectField('Disply Format', choices=OUTTYPES)
     
