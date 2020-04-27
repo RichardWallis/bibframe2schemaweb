@@ -42,7 +42,15 @@ font-size: 100%;
 margin: 0.5em 0 1em 0;
 position: relative;
 }
-*/
+.small {
+	font-size: smaller;
+	line-height: 90%;
+}
+.smallitalic {
+	font-size: smaller;
+	font-style: italic;
+	line-height: 90%;
+}
 hr
 {
 border: none;
@@ -132,9 +140,13 @@ input, select {
     padding: 5px;
     font-size: 1.2em;
 }
-
+input[type=submit] {
+    font-size: 1em !important;
+	background-color: black;
+	color: white;
+    cursor: pointer;
+}
 .uploadSource {
-    padding-left: 20px;
     padding-top: 5px;
     font-size: 1.2em;
     
@@ -145,6 +157,9 @@ input, select {
 .pasteSource {
     outline: none;
     overflow: auto;
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
 }
 .submit {
     font-size: 1.5em;

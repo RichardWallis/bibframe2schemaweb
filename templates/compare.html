@@ -26,8 +26,8 @@
     <h1>Comparison Viewer</h1>
 <div class="content">
     <p>
-        <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span><br/>
-        <span style="font-size: smaller;">Current scripts assume input contains at least a BIBFRAME Work and associated Instance entity, plus possibly an Item.</span>
+        <span class="small">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span><br/>
+        <span class="small">Current scripts assume input contains at least a BIBFRAME Work and associated Instance entity, plus possibly an Item.</span>
     </p>
     <div class='ds-selector-tabs ds-selector inputselector'>
       <div class='selectors'>
@@ -66,15 +66,16 @@
 	        </form>
 	    </div>
 	    <div class="selectionPanel ds-selection upload">
+			<div style="margin-left: 25px;">
 	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data">
 	            {{ uploadForm.hidden_tag() }}
 	            <p>
 	                <div >
 	                    <!-- {{ pasteForm.pasteSource.label }} -->
 						{{ uploadForm.uploadFile(class="uploadSource") }}
-						<br/>
-                        <span style="margin-left: 20px;font-size: smaller; font-style: italic;">.xml, .rdf, .jsonld, .ttl, .nt, .nq</span>
                         <span class="uploadValidationError">{{ ', '.join(uploadForm.uploadFile.errors) }}</span>
+						<br/>
+                        <span class="smallitalic">.xml, .rdf, .jsonld, .ttl, .nt, .nq</span>
 	                </div>
 	            </p>
 	            <p>
@@ -89,6 +90,7 @@
 	                </span>
 	            </p>
 			</form>
+		</div>
 	    </div>
 	    <div class="selectionPanel ds-selection paste">
 	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data" novalidate>

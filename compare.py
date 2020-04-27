@@ -184,10 +184,6 @@ class Compare():
                     self.sourceFormat = "jsonld"
                 elif "@prefix" in data:
                     self.sourceFormat = "turtle"
-                elif "<http:" in data:
-                    self.sourceFormat = "turtle"
-                elif "<https:" in data:
-                    self.sourceFormat = "turtle"
 
             if self.sourceFormat == "xml":
                 doc = None
@@ -206,6 +202,9 @@ class Compare():
                 else:
                     self.error("RDF Parse error number of RDF nodes identified: %s - should only be 1" % len(rnodes) )
                     
+            elif self.sourceFormat == "auto":
+                self.error("Cannot recognise input format - try selecting a specific source format")
+            
             else:
                 try:
                     self.graph.parse(data=data, format=self.sourceFormat)
