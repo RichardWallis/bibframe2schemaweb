@@ -56,7 +56,7 @@ hr
 border: none;
 height: 1px;
 background: #ccc;
-margin: 2em 0 4em 0;
+margin: 2em 0 1em 0;
 }
 
 .logo {
@@ -214,6 +214,10 @@ input[type=submit] {
   padding-top: 0;
   padding-bottom: 0;
 } 
+
+.selectionPanel.upload{
+    margin-left: 25px;
+}
   
 .clip {
 	margin-left: 5px;
@@ -235,7 +239,7 @@ input[type=submit] {
 .tooltip {
   position: relative;
   display: inline-block;
-  top: 10px;
+  top: 5px;
 }
 
 /* Tooltip text */

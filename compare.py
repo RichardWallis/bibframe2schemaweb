@@ -24,7 +24,7 @@ rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLD
 
 import config
 
-UPLOADTYPES = {'jsonld': 'jsonld','xml':'xml','nq':'nquads'}
+UPLOADTYPES = {'jsonld': 'jsonld','xml':'xml','nq':'nquads','rdf':'xml'}
 UPLOADTYPES.update(rdflib.util.SUFFIX_FORMAT_MAP)
 
 FLATTENIDS = True
@@ -166,7 +166,7 @@ class Compare():
         
     def loadPasteInputs(self):
         loaded = False
-        action = "paste"
+        self.action = "paste"
         if self.pasteForm.pasteSubmit.data:
             self.inputSelect = "paste"
             data = self.pasteForm.pasteSource.data
@@ -203,11 +203,12 @@ class Compare():
                     self.error("RDF Parse error number of RDF nodes identified: %s - should only be 1" % len(rnodes) )
                     
             elif self.sourceFormat == "auto":
-                self.error("Cannot recognise input format - try selecting a specific source format")
+                self.error("Input format not recognised - try selecting a specific source format")
             
             else:
                 try:
                     self.graph.parse(data=data, format=self.sourceFormat)
+                    self.source = self.sourceFormat
                 except Exception as e:
                     self.error("Error parsing %s: %s" % (self.sourceFormat,e))
 
@@ -219,13 +220,14 @@ class Compare():
     def loadUploadInputs(self):
         global UPLOADTYPES
         loaded = False
-        action = "upload"
+        self.action = "upload"
         if self.uploadForm.uploadSubmit.data: 
             self.inputSelect = "upload"
             self.outputFormat = self.outFormat = self.uploadForm.uploadOutFormat.data
             if self.uploadForm.validate_on_submit():
                 f = self.uploadForm.uploadFile.data
                 filename = secure_filename(f.filename)
+                self.source = filename
                 data = f.read()
                 data = data.strip()
                 ext = os.path.splitext(filename)[1]

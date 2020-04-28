@@ -64,9 +64,12 @@
 	                </span>
 	            </p>
 	        </form>
+            <br/>
+            {% if not dataToDisplay %}
+                <span class="smallitalic">To view an example, select Source Type </span><span class="small">Sample Source</span><span class="smallitalic">, choose a Display Format and click Search.</span>
+            {% endif %} <!-- dataToDisplay -->
 	    </div>
 	    <div class="selectionPanel ds-selection upload">
-			<div style="margin-left: 25px;">
 	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data">
 	            {{ uploadForm.hidden_tag() }}
 	            <p>
@@ -90,7 +93,6 @@
 	                </span>
 	            </p>
 			</form>
-		</div>
 	    </div>
 	    <div class="selectionPanel ds-selection paste">
 	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data" novalidate>
