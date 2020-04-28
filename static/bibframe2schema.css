@@ -42,13 +42,21 @@ font-size: 100%;
 margin: 0.5em 0 1em 0;
 position: relative;
 }
-*/
+.small {
+	font-size: smaller;
+	line-height: 90%;
+}
+.smallitalic {
+	font-size: smaller;
+	font-style: italic;
+	line-height: 90%;
+}
 hr
 {
 border: none;
 height: 1px;
 background: #ccc;
-margin: 2em 0 4em 0;
+margin: 2em 0 1em 0;
 }
 
 .logo {
@@ -132,6 +140,27 @@ input, select {
     padding: 5px;
     font-size: 1.2em;
 }
+input[type=submit] {
+    font-size: 1em !important;
+	background-color: black;
+	color: white;
+    cursor: pointer;
+}
+.uploadSource {
+    padding-top: 5px;
+    font-size: 1.2em;
+    
+}
+.uploadValidationError {
+    color: red;
+}
+.pasteSource {
+    outline: none;
+    overflow: auto;
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+}
 .submit {
     font-size: 1.5em;
     margin-left: 200px;
@@ -151,12 +180,13 @@ input, select {
   min-width: 54px;
   text-align: center;
   font-size: 1.2em;
-  height: 2.2em;
+  height: 1.8em;
   padding: 0 15px;
+  margin: 0 3px;
   line-height: 2em;
-  transition: all,0.218s;
-  border-top-right-radius: 5px;
-  border-top-left-radius: 5px;
+  transition: all,0.25s;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
   color: #666;
   background: #aaa;
   border: 1px solid transparent;
@@ -176,14 +206,18 @@ input, select {
   background: #ccc;
   cursor: pointer;
 }
-.ds-selector-tabs pre {
+.ds-selector-tabs .ds-selection {
   display: none;
 }
-.ds-selector-tabs pre.selected {
+.ds-selector-tabs .ds-selection.selected {
   display: block;
   padding-top: 0;
   padding-bottom: 0;
 } 
+
+.selectionPanel.upload{
+    margin-left: 25px;
+}
   
 .clip {
 	margin-left: 5px;
@@ -196,8 +230,8 @@ input, select {
 }
 
 .datapanel code {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 0; !important
+    padding-bottom: 0; !important
 }
 
 
@@ -205,7 +239,7 @@ input, select {
 .tooltip {
   position: relative;
   display: inline-block;
-  top: 10px;
+  top: 5px;
 }
 
 /* Tooltip text */

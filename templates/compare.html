@@ -5,40 +5,122 @@
 
 <script src="{{ url_for('static', filename='compare.js') }}"></script>
 
+<script>
+
+	var $presel = "{{ inputSelect }}";
+	$(document).ready(function(){
+	   setTimeout(function(){
+		   if (typeof $presel !== 'undefined'){
+			var $target = $('.inputselector a[data-selects="' + $presel +'"]')
+	        var $p = $target.parents('.ds-selector-tabs');
+	        $('.selected', $p).removeClass('selected');
+	        $target.addClass('selected');
+			var $selectorpanel = $('.ds-selection.' + $target.data('selects'), $p)
+	        $selectorpanel.addClass('selected');
+		}
+    });
+  }, 0);
+		
+</script>
 
     <h1>Comparison Viewer</h1>
 <div class="content">
-    <span style="font-size: smaller;">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span>
-    <div class="selectionPanel">
-        <form method="post" onsubmit="return hideData(this)" novalidate>
-            {{ form.hidden_tag() }}
-            <p>
-                <div >
-                    {{ form.source.label }}
-					{{ form.source() }}
-                </div>
-            </p>
-            <p>
-                <div class="selectInput">
-                    {{ form.sourceType.label }}
-                    {{ form.sourceType() }}
-                </div>
-                <div class="selectInput">
-                    {{ form.sourceFormat.label }}
-                    {{ form.sourceFormat() }}
-                </div>
-                <div class="selectInput">
-                    {{ form.outFormat.label }}
-                    {{ form.outFormat() }}
-                </div>
-            </p>
-            <p>
-                <span class="submit">
-                    {{ form.submit() }}
-                </span>
-            </p>
-        </form>
-    </div>
+    <p>
+        <span class="small">Demonstration of output from mapping scripts under development by the bibframe2schema.org community group.</span><br/>
+        <span class="small">Current scripts assume input contains at least a BIBFRAME Work and associated Instance entity, plus possibly an Item.</span>
+    </p>
+    <div class='ds-selector-tabs ds-selector inputselector'>
+      <div class='selectors'>
+        <a data-selects='search' class='selected'>Search</a>
+        <a data-selects='upload' class=''>Upload File</a>
+        <a data-selects='paste' class=''>Paste Code</a>
+	  </div>
+	    <div class="selectionPanel ds-selection selected search">
+	        <form method="post" onsubmit="return hideData(this)" novalidate>
+	            {{ form.hidden_tag() }}
+	            <p>
+	                <div >
+	                    {{ form.source.label }}
+						{{ form.source() }}
+	                </div>
+	            </p>
+	            <p>
+	                <div class="selectInput">
+	                    {{ form.sourceType.label }}
+	                    {{ form.sourceType() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ form.sourceFormat.label }}
+	                    {{ form.sourceFormat() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ form.outFormat.label }}
+	                    {{ form.outFormat() }}
+	                </div>
+	            </p>
+	            <p>
+	                <span class="submit">
+	                    {{ form.submit() }}
+	                </span>
+	            </p>
+	        </form>
+            <br/>
+            {% if not dataToDisplay %}
+                <span class="smallitalic">To view an example, select Source Type </span><span class="small">Sample Source</span><span class="smallitalic">, choose a Display Format and click Search.</span>
+            {% endif %} <!-- dataToDisplay -->
+	    </div>
+	    <div class="selectionPanel ds-selection upload">
+	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data">
+	            {{ uploadForm.hidden_tag() }}
+	            <p>
+	                <div >
+	                    <!-- {{ pasteForm.pasteSource.label }} -->
+						{{ uploadForm.uploadFile(class="uploadSource") }}
+                        <span class="uploadValidationError">{{ ', '.join(uploadForm.uploadFile.errors) }}</span>
+						<br/>
+                        <span class="smallitalic">.xml, .rdf, .jsonld, .ttl, .nt, .nq</span>
+	                </div>
+	            </p>
+	            <p>
+	                <div class="selectInput">
+	                    {{ uploadForm.uploadOutFormat.label }}
+	                    {{ uploadForm.uploadOutFormat() }}
+	                </div>
+	            </p>
+	            <p>
+	                <span class="submit">
+	                    {{ uploadForm.uploadSubmit() }}
+	                </span>
+	            </p>
+			</form>
+	    </div>
+	    <div class="selectionPanel ds-selection paste">
+	        <form method="post" onsubmit="return hideData(this)" enctype="multipart/form-data" novalidate>
+	            {{ pasteForm.hidden_tag() }}
+	            <p>
+	                <div >
+	                    <!-- {{ pasteForm.pasteSource.label }} -->
+						{{ pasteForm.pasteSource(rows=10, cols=100, class="pasteSource", wrap="off", placeholder="Paste your BIBFRAME") }}
+	                </div>
+	            </p>
+	            <p>
+	                <div class="selectInput">
+	                    {{ pasteForm.pasteSourceFormat.label }}
+	                    {{ pasteForm.pasteSourceFormat() }}
+	                </div>
+	                <div class="selectInput">
+	                    {{ pasteForm.pasteOutFormat.label }}
+	                    {{ pasteForm.pasteOutFormat() }}
+	                </div>
+	            </p>
+	            <p>
+	                <span class="submit">
+	                    {{ pasteForm.pasteSubmit() }}
+	                </span>
+	            </p>
+	        </form>
+	    </div>
+	</div>
     <div class="spinner">
         <div class="lds-spinner">
             <div></div><div></div><div></div><div></div>
@@ -53,29 +135,29 @@
             <a data-selects='source' class=''>Source Bibframe</a>
             <a data-selects='full' class=''>Bibframe + Schema.org</a>
             <a data-selects='schema'  class='selected'>Schema.org</a>
-			<div class="tooltip">
-				<button class="clip" data-clipboard-target=".datapanel.selected code" title="Copy to clipbard">
+			<div class="tooltip">	
+				<button class="clip" data-clipboard-target=".ds-selection.selected code" title="Copy to clipbard">
 				    <img src="{{ url_for('static', filename='clipboard/clippy.svg') }}" width="13" alt="Copy to clipboard">
 				</button>
 				<span class="tooltiptext">Copied</span>
 			</div>
         </div>
         {% if dataSource %}
-            <pre class="datapanel clip source " id="data-source">
+            <pre class="ds-selection datapanel clip source " id="data-source">
                 <code class=" {{ diplaylang }} ">
 {{ dataSource }}
                 </code>
             </pre>
             {% endif %} <!-- dataSource -->
         {% if dataFull %}
-            <pre class="datapanel clip full" id="data-full">
+            <pre class="ds-selection datapanel clip full" id="data-full">
                 <code class=" {{ diplaylang }} ">
 {{ dataFull }}
                 </code>
             </pre>
             {% endif %} <!-- dataFull -->
         {% if dataSchema %}
-            <pre class="datapanel clip schema selected" id="data-schema">
+            <pre class="ds-selection datapanel clip schema selected" id="data-schema">
                 <code class=" {{ diplaylang }} ">
 {{ dataSchema }}
                 </code>

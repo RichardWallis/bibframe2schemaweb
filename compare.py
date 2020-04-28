@@ -7,6 +7,8 @@ import re
 from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField,TextAreaField
+from flask_wtf.file import  FileField, FileAllowed, FileRequired
+from werkzeug.utils import secure_filename
 from urllib.request import urlopen
 from urllib.parse import urlparse
 import xml.dom.minidom
@@ -22,6 +24,9 @@ rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLD
 
 import config
 
+UPLOADTYPES = {'jsonld': 'jsonld','xml':'xml','nq':'nquads','rdf':'xml'}
+UPLOADTYPES.update(rdflib.util.SUFFIX_FORMAT_MAP)
+
 FLATTENIDS = True
 TESTTOKENFILE= "file:./testtokens.json"
 #TESTTOKENFILE= "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testtokens.json"
@@ -30,6 +35,7 @@ TOKENS = None
 TESTSPARQLSCRIPT = "file:./testbibframe2schema.sparql"
 #TESTSPARQLSCRIPT = "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testbibframe2schema.sparql"
 SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/query/bibframe2schema.sparql"
+
 SCHEMAONLY="""
 prefix schema: <http://schema.org/> 
 DELETE {
@@ -38,6 +44,7 @@ DELETE {
     ?s ?p ?o.
     FILTER ( ! (strstarts(str(?p),"http://schema.org") || strstarts(str(?o),"http://schema.org")) )
 }"""
+
 CHECK4BF = """
 SELECT * WHERE {
     {
@@ -62,69 +69,73 @@ class Compare():
     gotSource = False
     gotBf = False
     processed = False
+    action=""
+    outputFormat=""
     akLoC = False
     
     
     def graphInit(self):
-        graph = rdflib.Graph()
-        
+        #self.graph = rdflib.Graph()
+        self.graph = rdflib.ConjunctiveGraph(identifier=rdflib.URIRef("https://bibframe2schema.org"))
+
     def error(self,mess):
         self.graphInit()
         flash(mess)
         
     def compare(self):
-        form = CompareSelectForm()
         dataToDisplay = False
-        self.source = form.source.data
-        self.sourceType = form.sourceType.data
-        self.sourceFormat = form.sourceFormat.data
-        self.outFormat = form.outFormat.data
+        self.graphInit()
+        self.dataSource = self.dataFull = self.dataSchema = None
+        self.form = CompareSelectForm()
+        self.pasteForm = PasteSelectForm()
+        self.uploadForm = UploadSelectForm()
+        self.inputSelect = ""
+        if not self.loadSourceInputs():
+            if not self.loadPasteInputs():
+                if not self.loadUploadInputs():
+                    self.graphInit()
         
-        if self.sourceType.startswith('http'):  # A sample file!!
-            self.sampleFile = True
-            form.source.data = self.source = self.sourceType
-            form.sourceType.data = self.sourceType = 'url'
-        
-        if self.source:
-            
-            self.getSource() #Go get input
-            
-            if len(self.graph): #We got some input
-                self.gotSource = True
-                try:
-                    self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
+
+        if len(self.graph): #We got some input
+            self.gotSource = True
+            try:
+                self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
+                print
+                if self.outFormat == "jsonld":
+                    self.dataSource = self.simplyframe(self.dataSource)
+
+                if self.process():
+                    self.processed = True
+                    self.dataFull = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
                     if self.outFormat == "jsonld":
-                        self.dataSource = self.simplyframe(self.dataSource)
-                
-                    if self.process():
-                        self.processed = True
-                        self.dataFull = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
+                        self.dataFull = self.simplyframe(self.dataFull)
+
+                    if self.schemaOnly():
+                        context = {"schema": "http://schema.org/" }
+                        self.dataSchema = self.graph.serialize(format = self.outFormat ,
+                                        context = context,
+                                        auto_compact=True,
+                                        sort_keys=True).decode('utf-8')
+                        
                         if self.outFormat == "jsonld":
-                            self.dataFull = self.simplyframe(self.dataFull)
+                            self.dataSchema = self.simplyframe(self.dataSchema)
 
-                        if self.schemaOnly():
-                            context = {"schema": "http://schema.org/" }
-                            self.dataSchema = self.graph.serialize(format = self.outFormat ,
-                                            context = context,
-                                            auto_compact=True,
-                                            sort_keys=True).decode('utf-8')
-                                
-                            if self.outFormat == "jsonld":
-                                self.dataSchema = self.simplyframe(self.dataSchema)
-
-                except Exception as e:
-                    print("Output serialization error: %s" % e)
-                    self.error("Output serialization error: %s" % e)
+            except Exception as e:
+                print("Output serialization error: %s" % e)
+                self.error("Output serialization error: %s" % e)
 
             if self.dataSource or self.dataFull or self.dataSchema:
                 dataToDisplay = True
-                
-        self.logRequest()
+            #print("%s %s %s" % (len(self.dataSource),len(self.dataFull),len(self.dataSchema)))
+            self.logRequest()
 
         return render_template('compare.html',
                                 title='Compare Schema',
-                                form=form,
+                                form=self.form,
+                                pasteForm=self.pasteForm,
+                                uploadForm=self.uploadForm,
                                 dataSource = self.dataSource,
+                                inputSelect = self.inputSelect,
                                 dataFull = self.dataFull,
                                 dataSchema = self.dataSchema,
                                 diplaylang = self.outFormat,
@@ -132,9 +143,111 @@ class Compare():
                                 scriptUsed = SPARQLSCRIPT,
                                 akLoC = self.akLoC)
     
+    def loadSourceInputs(self):
+        loaded = False
+        if self.form.submit.data:
+            self.inputSelect = "search"
+            self.source = self.form.source.data
+            self.sourceType = self.form.sourceType.data
+            self.sourceFormat = self.form.sourceFormat.data
+            self.outputFormat = self.outFormat = self.form.outFormat.data
+        
+            if self.sourceType.startswith('http'):  # A sample file!!
+                self.sampleFile = True
+                self.form.source.data = self.source = self.sourceType
+                self.form.sourceType.data = self.sourceType = 'url'
+        
+            if self.source:
+                self.getSource() #Go get input
+
+            if len(self.graph):
+                loaded = True
+        return loaded
+        
+    def loadPasteInputs(self):
+        loaded = False
+        self.action = "paste"
+        if self.pasteForm.pasteSubmit.data:
+            self.inputSelect = "paste"
+            data = self.pasteForm.pasteSource.data
+            data = data.strip()
+            self.sourceFormat = self.pasteForm.pasteSourceFormat.data
+            self.outputFormat = self.outFormat = self.pasteForm.pasteOutFormat.data
+            if self.sourceFormat == "auto":
+                if data.startswith("<?xml version="):
+                    self.sourceFormat = "xml"
+                elif "@context" in data:
+                    self.sourceFormat = "jsonld"
+                elif "@id" in data:
+                    self.sourceFormat = "jsonld"
+                elif "@type" in data:
+                    self.sourceFormat = "jsonld"
+                elif "@prefix" in data:
+                    self.sourceFormat = "turtle"
+
+            if self.sourceFormat == "xml":
+                doc = None
+                try:
+                    doc = xml.dom.minidom.parseString(data)
+                except Exception as e:
+                    self.error("XML Parse error: %s" % e)
+
+                rdfnodes = doc.getElementsByTagNameNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#","RDF")
+                if len(rdfnodes) == 1:
+                    bf = rdfnodes[0].toxml()
+                    try:
+                        self.graph.parse(data=bf, format='xml')
+                    except Exception as e:
+                        self.error("Error parsing RDF: %s" % e)
+                else:
+                    self.error("RDF Parse error number of RDF nodes identified: %s - should only be 1" % len(rnodes) )
+                    
+            elif self.sourceFormat == "auto":
+                self.error("Input format not recognised - try selecting a specific source format")
+            
+            else:
+                try:
+                    self.graph.parse(data=data, format=self.sourceFormat)
+                    self.source = self.sourceFormat
+                except Exception as e:
+                    self.error("Error parsing %s: %s" % (self.sourceFormat,e))
+
+            if len(self.graph):
+                loaded = True
+
+        return loaded
+
+    def loadUploadInputs(self):
+        global UPLOADTYPES
+        loaded = False
+        self.action = "upload"
+        if self.uploadForm.uploadSubmit.data: 
+            self.inputSelect = "upload"
+            self.outputFormat = self.outFormat = self.uploadForm.uploadOutFormat.data
+            if self.uploadForm.validate_on_submit():
+                f = self.uploadForm.uploadFile.data
+                filename = secure_filename(f.filename)
+                self.source = filename
+                data = f.read()
+                data = data.strip()
+                ext = os.path.splitext(filename)[1]
+                ext = ext[1:]
+                format = UPLOADTYPES.get(ext,None)
+                if format :
+                    try:
+                        self.graph.parse(data=data, format=format) 
+                    except Exception as e:
+                        print("Error parsing uploaded file: %s" % e)
+                        self.error("Error parsing uploaded file: %s" % e)
+
+            if len(self.graph):
+                loaded = True
+
+        return loaded
+            
     def getSource(self):
         self.graphInit()
- 
+        self.action = self.sourceType
         sformat = self.sourceFormat
         if sformat == 'auto':
             sformat = None
@@ -163,7 +276,6 @@ class Compare():
         elif self.sourceType == 'locbib' or self.sourceType == 'loclccn':
             self.getLoc(self.sourceType,self.source)
             
-        self.check4Bibframe()
 
     def getLoc(self,qtype,id):
         bf=None
@@ -206,27 +318,30 @@ class Compare():
             self.error("Bibframe Work, Instance, or Item not identified in source")
         else:
             self.gotBf = True
+        return self.gotBf
 
 
         
     def process(self):
         global SPARQLSCRIPT,TESTSPARQLSCRIPT
-        script = SPARQLSCRIPT
-        if config.TestMode:
-            script = TESTSPARQLSCRIPT
+        ret = False
+        if self.check4Bibframe():   #Found some bibframe entities     
+            script = SPARQLSCRIPT
+            if config.TestMode:
+                script = TESTSPARQLSCRIPT
             
-        sparql = URLCache.get(script)
-        if sparql:
-            sparql = self.tokenSubstitute(sparql)
+            sparql = URLCache.get(script)
             if sparql:
-                try:
-                    self.graph.bind('schema', 'http://schema.org/')
-                    self.graph.update(sparql)
-                    return True
-                except Exception as e:
-                    self.error("Sparql parse error: %s" % e)
-                    print("Sparql parse error: \n%s" % (e))
-        return False
+                sparql = self.tokenSubstitute(sparql)
+                if sparql:
+                    try:
+                        self.graph.bind('schema', 'http://schema.org/')
+                        self.graph.update(sparql)
+                        ret = True
+                    except Exception as e:
+                        self.error("Sparql parse error: %s" % e)
+                        print("Sparql parse error: \n%s" % (e))
+        return ret
         
     def schemaOnly(self):
         global SCHEMAONLY
@@ -322,12 +437,12 @@ class Compare():
             caller = request.environ.get('HTTP_X_FORWARDED_FOR')
             if not caller:
                 caller = request.environ.get('REMOTE_ADDR')
-            stype = self.sourceType
+            stype = self.action
             source = self.source
             if self.sampleFile:
                 stype = "Sample"
                 source = ""
-            oformat = self.outFormat
+            oformat = self.outputFormat
             
             gs = gb = "No "
             pr = "Not "
@@ -351,7 +466,10 @@ class Compare():
                                         gs,
                                         gb,
                                         pr))
-                
+   
+   
+INTYPES = [('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle'),('nt','Triples'),('nquads','Quads')]
+OUTTYPES = [('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle'),('nt','Triples'),('nquads','Quads')]             
 
 class CompareSelectForm(FlaskForm):
     source = StringField('Source')
@@ -360,8 +478,19 @@ class CompareSelectForm(FlaskForm):
                                 ('locbib','LoC Bib ID'),
                                 ('loclccn','LoC LCCN'),
                                 ('https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/tests/source/LCCN-98033893.xml','Sample Source')])
-    sourceFormat = SelectField('Source Format', choices=[('auto','auto'),('xml','RDF/XML'),('jsonld','JSON-LD'),('turtle','Turtle')])
-    outFormat = SelectField('Disply Format', choices=[('jsonld','JSON-LD'),('xml','RDF/XML'),('turtle','Turtle')])
+    sourceFormat = SelectField('Source Format', choices=INTYPES)
+    outFormat = SelectField('Disply Format', choices=OUTTYPES)
+
+class PasteSelectForm(FlaskForm):
+    pasteSource = TextAreaField('Paste')
+    pasteSubmit = SubmitField('Process')
+    pasteSourceFormat = SelectField('Source Format', choices=INTYPES)
+    pasteOutFormat = SelectField('Disply Format', choices=OUTTYPES)
+    
+class UploadSelectForm(FlaskForm):
+    uploadFile = FileField(validators=[FileAllowed(UPLOADTYPES, 'RDF only!'), FileRequired('File was empty!')])
+    uploadSubmit = SubmitField('Upload')
+    uploadOutFormat = SelectField('Disply Format', choices=OUTTYPES)
     
 import datetime
 import urllib.request

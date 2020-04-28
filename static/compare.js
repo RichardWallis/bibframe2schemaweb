@@ -17,7 +17,8 @@ $(document).ready(function(){
         var $p = $this.parents('.ds-selector-tabs');
         $('.selected', $p).removeClass('selected');
         $this.addClass('selected');
-        $('pre.' + $this.data('selects'), $p).addClass('selected');
+		var $selectorpanel = $('.ds-selection.' + $this.data('selects'), $p)
+        $selectorpanel.addClass('selected');
       });
     }, 0);
 	
