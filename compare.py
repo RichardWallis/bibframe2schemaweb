@@ -501,6 +501,8 @@ class URLCache():
     @classmethod
     def get(cls,url):
         itm = cls.items.get(url,None)
+        if config.TestMode:
+            itm = None
         if itm:
             timeout = datetime.timedelta(hours=1)
             if (itm.time + timeout) <  datetime.datetime.now():
