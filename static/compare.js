@@ -28,6 +28,9 @@ $(document).ready(function(){
 		tip.text('Copied!');
 		tip.addClass('show');
 	    e.clearSelection();
+        setTimeout(function(targ) {
+            targ.removeClass('show');
+        }, 5000);
 	});
 
 	clip.on('error', function(e) {

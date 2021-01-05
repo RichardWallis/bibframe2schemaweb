@@ -30,11 +30,11 @@ UPLOADTYPES.update(rdflib.util.SUFFIX_FORMAT_MAP)
 FLATTENIDS = True
 TESTTOKENFILE= "file:./testtokens.json"
 #TESTTOKENFILE= "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testtokens.json"
-TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/master/tokens.json"
+TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/main/tokens.json"
 TOKENS = None
 TESTSPARQLSCRIPT = "file:./testbibframe2schema.sparql"
 #TESTSPARQLSCRIPT = "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testbibframe2schema.sparql"
-SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/query/bibframe2schema.sparql"
+SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/main/query/bibframe2schema.sparql"
 
 SCHEMAONLY="""
 prefix schema: <http://schema.org/> 
@@ -477,7 +477,7 @@ class CompareSelectForm(FlaskForm):
     sourceType = SelectField('Source Type', choices=[('url','URL'),
                                 ('locbib','LoC Bib ID'),
                                 ('loclccn','LoC LCCN'),
-                                ('https://raw.githubusercontent.com/RichardWallis/bibframe2schema/master/tests/source/LCCN-98033893.xml','Sample Source')])
+                                ('https://raw.githubusercontent.com/RichardWallis/bibframe2schema/main/tests/source/LCCN-98033893.xml','Sample Source')])
     sourceFormat = SelectField('Source Format', choices=INTYPES)
     outFormat = SelectField('Disply Format', choices=OUTTYPES)
 
