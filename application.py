@@ -1,6 +1,8 @@
-import sys
+#!/usr/bin/env python
+# import sys
 from flask import Flask, render_template, flash, redirect, request
 import config
+import sys
 from compare import Compare
 
 app = Flask(__name__)

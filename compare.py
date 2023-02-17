@@ -15,16 +15,12 @@ import xml.dom.minidom
 
 import json
 import rdflib
-import rdflib_jsonld
 from rdflib.parser import Parser
-from rdflib.serializer import Serializer
-
-rdflib.plugin.register("jsonld", Parser, "rdflib_jsonld.parser", "JsonLDParser")
-rdflib.plugin.register("jsonld", Serializer, "rdflib_jsonld.serializer", "JsonLDSerializer")
+from rdflib.namespace import XSD
 
 import config
 
-UPLOADTYPES = {'jsonld': 'jsonld','xml':'xml','nq':'nquads','rdf':'xml'}
+UPLOADTYPES = {'json-ld': 'jsonld','xml':'xml','nq':'nquads','rdf':'xml'}
 UPLOADTYPES.update(rdflib.util.SUFFIX_FORMAT_MAP)
 
 FLATTENIDS = True
@@ -37,7 +33,7 @@ TESTSPARQLSCRIPT = "file:./testbibframe2schema.sparql"
 SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/main/query/bibframe2schema.sparql"
 
 SCHEMAONLY="""
-prefix schema: <http://schema.org/> 
+prefix schema: <https://schema.org/> 
 DELETE {
     ?s ?p ?o.
 } WHERE {
@@ -99,23 +95,24 @@ class Compare():
         if len(self.graph): #We got some input
             self.gotSource = True
             try:
-                self.dataSource = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
-                print
+                if self.outFormat == "jsonld":
+                    fmt = "json-ld"
+                self.dataSource = self.graph.serialize(format = fmt , auto_compact=True)
                 if self.outFormat == "jsonld":
                     self.dataSource = self.simplyframe(self.dataSource)
 
                 if self.process():
                     self.processed = True
-                    self.dataFull = self.graph.serialize(format = self.outFormat , auto_compact=True).decode('utf-8')
+                    self.dataFull = self.graph.serialize(format = fmt , auto_compact=True)
                     if self.outFormat == "jsonld":
                         self.dataFull = self.simplyframe(self.dataFull)
 
                     if self.schemaOnly():
-                        context = {"schema": "http://schema.org/" }
-                        self.dataSchema = self.graph.serialize(format = self.outFormat ,
+                        context = {"schema": "https://schema.org/" }
+                        self.dataSchema = self.graph.serialize(format = fmt ,
                                         context = context,
                                         auto_compact=True,
-                                        sort_keys=True).decode('utf-8')
+                                        sort_keys=True)
                         
                         if self.outFormat == "jsonld":
                             self.dataSchema = self.simplyframe(self.dataSchema)
@@ -335,13 +332,38 @@ class Compare():
                 sparql = self.tokenSubstitute(sparql)
                 if sparql:
                     try:
-                        self.graph.bind('schema', 'http://schema.org/')
-                        self.graph.update(sparql)
+                        self.graph.bind('schema', 'https://schema.org/')
+                        self.graph.update(sparql,initBindings=self.getBindings())
                         ret = True
                     except Exception as e:
                         self.error("Sparql parse error: %s" % e)
                         print("Sparql parse error: \n%s" % (e))
         return ret
+    BINDINGSTORE=None
+    def getBindings(self):
+
+        EXBINDINGS = config.EXBINDINGS
+        if not self.BINDINGSTORE:
+            bindings = {}
+
+            bindings['TODAY'] =  rdflib.Literal(datetime.datetime.utcnow().strftime("%Y-%m-%d"),datatype=XSD.date)
+            bindings['NOW'] = rdflib.Literal(datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),datatype=XSD.dateTime)
+
+            urir = re.compile(r'^<(http.*)>$')
+
+            for b in EXBINDINGS:
+                val = EXBINDINGS[b].strip()
+                uri = None
+                match = urir.search(val)
+                if match:
+                    uri = match.group(1)
+                if uri:
+                    bindings[b] = rdflib.URIRef(uri)
+                else:
+                    bindings[b] = rdflib.Literal(val)
+            self.BINDINGSTORE = bindings
+
+        return self.BINDINGSTORE  
         
     def schemaOnly(self):
         global SCHEMAONLY
