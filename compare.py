@@ -24,22 +24,23 @@ UPLOADTYPES = {'json-ld': 'jsonld','xml':'xml','nq':'nquads','rdf':'xml'}
 UPLOADTYPES.update(rdflib.util.SUFFIX_FORMAT_MAP)
 
 FLATTENIDS = True
-TESTTOKENFILE= "file:./testtokens.json"
-#TESTTOKENFILE= "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testtokens.json"
-TOKENFILE= "https://github.com/RichardWallis/bibframe2schema/raw/main/tokens.json"
-TOKENS = None
 TESTSPARQLSCRIPT = "file:./testbibframe2schema.sparql"
 #TESTSPARQLSCRIPT = "file:////Users/wallisr/Development/bibframe2schema/bibframe2schemaweb/testbibframe2schema.sparql"
 SPARQLSCRIPT = "https://raw.githubusercontent.com/RichardWallis/bibframe2schema/main/query/bibframe2schema.sparql"
 
-SCHEMAONLY="""
-prefix schema: <https://schema.org/> 
-DELETE {
+URIROOT = "https://bibframe2schema.org"
+BNODEROOT = URIROOT + "/bnode/"
+
+SCHEMA = "https://schema.org"
+
+SCHEMAONLY=f"""
+prefix schema: <{SCHEMA}> 
+DELETE {{
     ?s ?p ?o.
-} WHERE {
+}} WHERE {{
     ?s ?p ?o.
-    FILTER ( ! (strstarts(str(?p),"http://schema.org") || strstarts(str(?o),"http://schema.org")) )
-}"""
+    FILTER ( ! (strstarts(str(?p),"{SCHEMA}") || strstarts(str(?o),"{SCHEMA}")) )
+}}"""
 
 CHECK4BF = """
 SELECT * WHERE {
@@ -51,6 +52,20 @@ SELECT * WHERE {
         ?s a <http://id.loc.gov/ontologies/bibframe/Item> .
     }
 }"""
+
+REMOVEBLANKNODES="""
+delete {
+    ?a ?b ?c .
+}
+insert {
+    ?na ?b ?nc .
+}
+where {
+    bind(?bnoderoot as ?p) .
+    ?a ?b ?c .
+    bind(if(isBlank(?a),iri(concat(?p, SHA256(str(?a)))),?a) as ?na).
+    bind(if(isBlank(?c),iri(concat(?p, SHA256(str(?c)))),?c) as ?nc).
+}""" 
 
 class Compare():
     graph = rdflib.Graph()
@@ -72,7 +87,7 @@ class Compare():
     
     def graphInit(self):
         #self.graph = rdflib.Graph()
-        self.graph = rdflib.ConjunctiveGraph(identifier=rdflib.URIRef("https://bibframe2schema.org"))
+        self.graph = rdflib.ConjunctiveGraph(identifier=rdflib.URIRef(URIROOT))
 
     def error(self,mess):
         self.graphInit()
@@ -93,27 +108,32 @@ class Compare():
         
 
         if len(self.graph): #We got some input
+            global REMOVEBLANKNODES, BNODEROOT
+
             self.gotSource = True
+
+            fmt = self.outFormat
+            if fmt == "jsonld":
+                fmt = "json-ld"
+            
             try:
-                if self.outFormat == "jsonld":
-                    fmt = "json-ld"
+                self.graph.update(REMOVEBLANKNODES,initBindings={'bnoderoot': rdflib.Literal(BNODEROOT)})
                 self.dataSource = self.graph.serialize(format = fmt , auto_compact=True)
                 if self.outFormat == "jsonld":
                     self.dataSource = self.simplyframe(self.dataSource)
 
                 if self.process():
                     self.processed = True
+                    self.graph.update(REMOVEBLANKNODES,initBindings={'bnoderoot': rdflib.Literal(BNODEROOT)})
                     self.dataFull = self.graph.serialize(format = fmt , auto_compact=True)
                     if self.outFormat == "jsonld":
                         self.dataFull = self.simplyframe(self.dataFull)
-
                     if self.schemaOnly():
-                        context = {"schema": "https://schema.org/" }
+                        context = {"schema": SCHEMA }
                         self.dataSchema = self.graph.serialize(format = fmt ,
                                         context = context,
                                         auto_compact=True,
                                         sort_keys=True)
-                        
                         if self.outFormat == "jsonld":
                             self.dataSchema = self.simplyframe(self.dataSchema)
 
@@ -321,6 +341,8 @@ class Compare():
         
     def process(self):
         global SPARQLSCRIPT,TESTSPARQLSCRIPT
+
+
         ret = False
         if self.check4Bibframe():   #Found some bibframe entities     
             script = SPARQLSCRIPT
@@ -329,16 +351,16 @@ class Compare():
             
             sparql = URLCache.get(script)
             if sparql:
-                sparql = self.tokenSubstitute(sparql)
-                if sparql:
-                    try:
-                        self.graph.bind('schema', 'https://schema.org/')
-                        self.graph.update(sparql,initBindings=self.getBindings())
-                        ret = True
-                    except Exception as e:
-                        self.error("Sparql parse error: %s" % e)
-                        print("Sparql parse error: \n%s" % (e))
+                try:
+                    self.graph.bind('schema', SCHEMA)
+                    self.graph.update(sparql,initBindings=self.getBindings())
+
+                    ret = True
+                except Exception as e:
+                    self.error("Sparql parse error: %s" % e)
+                    print("Sparql parse error: \n%s" % (e))
         return ret
+
     BINDINGSTORE=None
     def getBindings(self):
 
@@ -374,42 +396,6 @@ class Compare():
             print("SchemaOnly sparql parse error: \n%s" % (e))
         return False
     
-    def tokenSubstitute(self,string):
-        global TOKENFILE,TESTTOKENFILE,TOKENS
-    
-        if not TOKENS:
-            today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-            now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-            TOKENS = {
-                "TODAY": today,
-                "NOW": now
-            }
-
-            data = None
-            tfile = TOKENFILE
-            if config.TestMode:
-                tfile = TESTTOKENFILE
-                
-            if tfile:
-                try:
-                    tf = URLCache.get(tfile)
-                    if tf:
-                        data = json.loads(tf)
-                except Exception as e:
-                     print("Token file load error: \n%s" % (e))
-                     self.error("Token file load error: \n%s" % (e))
-                     return None
- 
-            if data:
-                TOKENS.update(data)
-
-        if TOKENS:
-            for t, v in TOKENS.items():
-                string = string.replace("[[%s]]" % t ,v)
-        
-        string = re.sub('\\[\\[.*?\\]\\]','',string) #Remove unrecognised tokens
-        
-        return string
     
     def simplyframe(self,jsl):
         data = json.loads(jsl)
@@ -426,13 +412,14 @@ class Compare():
                             refs.setdefault(refid, (v, []))[1].append(item)
         for ref, subjects in refs.values():
             if len(subjects) == 1:
-                ref.update(items.pop(ref['@id']))
+                i = items.pop(ref['@id'])
+                ref.update(i)
                 del ref['@id']
         if FLATTENIDS:
             items = self.flattenIds(items)
         data['@graph'] = items
         return json.dumps(data, indent=2)
-        
+
     def flattenIds(self, node):
         ret = node
         if isinstance(node, dict):
@@ -449,7 +436,7 @@ class Compare():
                 lst.append(self.flattenIds(v))
             ret = lst
         return ret
-        
+
     def flush(self):
         URLCache.flush()
         flash("URLCache flushed")
